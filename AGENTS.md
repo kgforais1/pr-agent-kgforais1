@@ -107,6 +107,7 @@ Ruff is the single linting tool: `pyproject.toml` configures it and the pre-comm
 - Before creating any PR, verify the base with `gh repo view --json nameWithOwner`.
 - Upstream sync is handled by the scheduled workflow; do not run ad-hoc merges from upstream without the owner asking.
 - If the owner ever explicitly asks for an upstream PR, require written confirmation first; note that it is technically impossible from this repo unless a new fork of upstream is created — flag that instead of doing it silently.
+- Never bypass safety gates: no `--no-verify` on git hooks, no force-push, no skipping or overriding branch protection/rulesets, and no disabling CI checks — unless the owner explicitly approves that specific bypass first.
 - Ask for confirmation before adding dependencies, renaming files, or changing workflow definitions; many consumers embed these paths and prompts.
 - Stay within existing formatting and directory conventions—avoid mass refactors, re-sorting of prompts, or reformatting Markdown beyond the touched sections.
 - You may read files, list directories, and run targeted lint/test/doc commands without prior approval; coordinate before launching full Docker builds or e2e suites that rely on external credentials.
