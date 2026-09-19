@@ -9,6 +9,11 @@ permissions:
   contents: read
   issues: write
 
+# Serialize scheduled and manually dispatched runs.
+concurrency:
+  group: upstream-pr-leak-check
+  cancel-in-progress: false
+
 jobs:
   leak-check:
     runs-on: ubuntu-latest
@@ -19,12 +24,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RESPONSE=$(gh api "search/issues?q=repo:The-PR-Agent/pr-agent+type:pr+is:open+user:kgforais1")
-          COUNT=$(echo "$RESPONSE" | jq -r ".total_count // 0")
-          if [ "$COUNT" -gt 0 ]; then
-            PRS=$(echo "$RESPONSE" | jq -r '.items[] | "- #\(.number): \(.title) (\(.html_url))"')
-            printf '%s\n' "## Upstream PR Leak Detector" "" "Open PRs were found targeting upstream from this account:" "" "$PRS" "" "Investigate and close if unintended." > /tmp/issue-body.txt
-            gh issue create --title "Upstream PR leak detected" --body-file /tmp/issue-body.txt
+          # `user:` in issue search does NOT mean authorship — use `author:`.
+          # Check both accounts: kgforais1 owns the repo; kgrizz-git is the
+          # token agents on the primary clone authenticate with, so any agent-
+          # created PR would surface under that author.
+          : > /tmp/leaks.txt
+          for ACCOUNT in kgforais1 kgrizz-git; do
+            gh api "search/issues?q=repo:The-PR-Agent/pr-agent+type:pr+is:open+author:${ACCOUNT}" \
+              --jq '.items[] | "- #\(.number): \(.title) (\(.html_url)) — author: \(.user.login)"' >> /tmp/leaks.txt
+          done
+          sort -u /tmp/leaks.txt -o /tmp/leaks.txt
+          if [ -s /tmp/leaks.txt ]; then
+            printf '%s\n' "## Upstream PR Leak Detector" "" "Open PRs authored by this repo's accounts were found on upstream:" "" "$(cat /tmp/leaks.txt)" "" "If unintended: close the PRs and check which checkout or credential created them." > /tmp/issue-body.txt
+            ANCHOR=$(gh issue list --search "Upstream PR leak detected in:title" --state open --json number --jq ".[0].number // empty")
+            if [ -n "$ANCHOR" ]; then
+              gh issue edit "$ANCHOR" --body-file /tmp/issue-body.txt
+            else
+              gh issue create --title "Upstream PR leak detected" --body-file /tmp/issue-body.txt
+            fi
           else
             echo "No open upstream PRs found."
           fi
