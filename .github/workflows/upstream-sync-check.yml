@@ -20,7 +20,7 @@ jobs:
         id: upstream
         env:
           GH_TOKEN: ${{ github.token }}
-        run: echo "branch=$(gh api repos/The-PR-Agent/pr-agent --jq .default_branch)" >> $GITHUB_OUTPUT
+        run: echo "branch=$(gh api repos/The-PR-Agent/pr-agent --jq .default_branch)" >> "$GITHUB_OUTPUT"
       - name: Fetch upstream
         run: git fetch https://github.com/The-PR-Agent/pr-agent.git "${{ steps.upstream.outputs.branch }}"
       - name: Detect new commits
@@ -28,13 +28,13 @@ jobs:
         run: |
           LOG=$(git log --oneline HEAD..FETCH_HEAD || true)
           if [ -n "$LOG" ]; then
-            echo "has=true" >> $GITHUB_OUTPUT
+            echo "has=true" >> "$GITHUB_OUTPUT"
             echo "$LOG" > /tmp/upstream-commits.txt
           else
-            echo "has=false" >> $GITHUB_OUTPUT
+            echo "has=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Create or update tracking issue
-        if: steps.detect.outputs.has == "true"
+        if: steps.detect.outputs.has == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
