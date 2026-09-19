@@ -1,0 +1,20 @@
+#!/bin/sh
+# Block direct pushes to protected branches. Changes to these branches must go
+# through a pull request. Enable in a fresh clone with:
+#   git config core.hooksPath .githooks
+# Bypass is intentionally awkward: push with --no-verify only after explicit
+# owner approval (see AGENTS.md "Safety and Permissions").
+
+PROTECTED="main master"
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+	branch="${remote_ref#refs/heads/}"
+	case " $PROTECTED " in
+	*" $branch "*)
+		echo "pre-push: direct pushes to '$branch' are blocked. Use a feature branch and open a PR." >&2
+		exit 1
+		;;
+	esac
+done
+
+exit 0
