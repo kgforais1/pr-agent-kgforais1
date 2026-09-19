@@ -29,6 +29,17 @@ Tracked work for the `kgforais1/pr-agent-kgforais1` repo (standalone, detached f
       (then strip or disable `publish.yml` and document "not published anywhere").
       Owner has never published a package; no commitment made.
 
+### Repo process
+
+- [ ] **Plan/todo lifecycle guidance and repo harness** — codify how work is planned
+      and tracked in this repo so every agent session follows it: where durable plans
+      live (gitignored `tmp/` plans vanish with local cleanup; decide whether
+      substantive plans get promoted into the repo), TODO.md update conventions
+      (when items get added, moved to Done, pruned), how AGENTS.md should instruct
+      agents to check TODO.md at session start, and any supporting scaffolding
+      (naming conventions, linting of the tracker, etc.). Aim: no plan or decision
+      exists only in chat history.
+
 ### Security
 
 - [ ] **Dependabot findings** — 1 critical, 1 high, 1 moderate on the default branch
