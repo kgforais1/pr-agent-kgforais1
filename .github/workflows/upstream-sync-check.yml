@@ -9,6 +9,12 @@ permissions:
   contents: read
   issues: write
 
+# Serialize scheduled and manually dispatched runs so two overlapping runs can
+# never race to create duplicate "upstream-sync" tracking issues.
+concurrency:
+  group: upstream-sync-check
+  cancel-in-progress: false
+
 jobs:
   sync-check:
     runs-on: ubuntu-latest
