@@ -7,8 +7,6 @@ Tracked work for the `kgforais1/pr-agent-kgforais1` repo (standalone, detached f
 
 ### Fork hardening (owner actions, web UI)
 
-- [ ] **Merge PR #1** — `.githooks/` (pre-push blocks direct pushes to `main`;
-      pre-commit shim bridging to the pre-commit framework) + AGENTS.md safety rules.
 - [ ] **Add repo description and topics** (owner account `kgforais1`, repo page →
       About ⚙): description "Detached fork of The-PR-Agent/pr-agent (AI PR review
       agent) with custom changes"; topics `pr-agent`, `code-review`, `llm`.
@@ -38,15 +36,20 @@ Tracked work for the `kgforais1/pr-agent-kgforais1` repo (standalone, detached f
 
 ## Done (2026-09-19)
 
-- [x] Detached from fork network (UI, owner action) — upstream PRs now impossible
-      server-side, accidental and deliberate alike.
+- [x] PR #1 merged — `.githooks/` (pre-push blocks direct pushes to `main`;
+      pre-commit shim bridging to the pre-commit framework) + AGENTS.md safety rules.
+- [x] Detached from fork network (UI, owner action) — PRs to upstream **from this
+      repository** are now impossible server-side, accidental and deliberate alike.
+      (This does not stop a brand-new fork of upstream being created under this
+      account; see the leak-check item below.)
 - [x] `.gitignore` — scratch dirs (`tmp/`, `temp/`), secrets patterns, tool caches.
 - [x] `AGENTS.md` — upstream-PR prohibition, base-verification rule, no-bypass rule,
       no-direct-push rule with release-workflow exemption.
 - [x] `.github/workflows/upstream-sync-check.yml` — daily 08:00 UTC, maintains a
       single rolling `upstream-sync` tracking issue for new upstream commits.
-- [x] `.github/workflows/upstream-pr-leak-check.yml` — weekly check for rogue PRs
-      opened against upstream from this account (covers the new-fork residual risk).
+- [x] `.github/workflows/upstream-pr-leak-check.yml` — weekly **detection-only**
+      check for rogue PRs opened against upstream from this account (covers the
+      new-fork residual risk; it cannot prevent them).
 - [x] CodeQL dual-setup conflict resolved by disabling GitHub's default setup
       (kept the richer in-repo workflow).
 - [x] `gh repo set-default kgforais1/pr-agent-kgforais1` in the primary clone.
