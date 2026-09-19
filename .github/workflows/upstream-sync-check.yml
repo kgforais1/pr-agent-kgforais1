@@ -1,0 +1,50 @@
+name: upstream-sync-check
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Get upstream default branch
+        id: upstream
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "branch=$(gh api repos/The-PR-Agent/pr-agent --jq .default_branch)" >> $GITHUB_OUTPUT
+      - name: Fetch upstream
+        run: git fetch https://github.com/The-PR-Agent/pr-agent.git "${{ steps.upstream.outputs.branch }}"
+      - name: Detect new commits
+        id: detect
+        run: |
+          LOG=$(git log --oneline HEAD..FETCH_HEAD || true)
+          if [ -n "$LOG" ]; then
+            echo "has=true" >> $GITHUB_OUTPUT
+            echo "$LOG" > /tmp/upstream-commits.txt
+          else
+            echo "has=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Create or update tracking issue
+        if: steps.detect.outputs.has == "true"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create upstream-sync --description "Upstream sync tracking" --color 0366d6 --force
+          UPSTREAM_COMMITS_URL="https://github.com/The-PR-Agent/pr-agent/commits/${{ steps.upstream.outputs.branch }}"
+          LOG=$(cat /tmp/upstream-commits.txt)
+          printf '%s\n' "## Upstream Sync" "" "New commits detected in upstream (${{ steps.upstream.outputs.branch }}):" "" '```' "$LOG" '```' "" "See: ${UPSTREAM_COMMITS_URL}" > /tmp/issue-body.txt
+          ISSUE=$(gh issue list --label upstream-sync --state open --json number --jq ".[0].number // empty")
+          if [ -n "$ISSUE" ]; then
+            gh issue edit "$ISSUE" --body-file /tmp/issue-body.txt
+          else
+            gh issue create --title "Upstream sync tracking" --body-file /tmp/issue-body.txt --label upstream-sync
+          fi

@@ -1,0 +1,28 @@
+name: upstream-pr-leak-check
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  leak-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Search for open upstream PRs and report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RESPONSE=$(gh api "search/issues?q=repo:The-PR-Agent/pr-agent+type:pr+is:open+user:kgforais1")
+          COUNT=$(echo "$RESPONSE" | jq -r ".total_count // 0")
+          if [ "$COUNT" -gt 0 ]; then
+            PRS=$(echo "$RESPONSE" | jq -r '.items[] | "- #\(.number): \(.title) (\(.html_url))"')
+            printf '%s\n' "## Upstream PR Leak Detector" "" "Open PRs were found targeting upstream from this account:" "" "$PRS" "" "Investigate and close if unintended." > /tmp/issue-body.txt
+            gh issue create --title "Upstream PR leak detected" --body-file /tmp/issue-body.txt
+          else
+            echo "No open upstream PRs found."
+          fi

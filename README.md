@@ -27,6 +27,8 @@ The Original Open-Source PR Reviewer
 PR-Agent is an open-source, AI-powered code review agent and a community-maintained legacy project of Qodo. It is distinct from Qodo's primary AI code review offering, which provides a feature-rich, context-aware experience. Qodo offers a free version for open-source projects and integrates seamlessly with GitHub, GitLab, Bitbucket, and Azure DevOps for high-quality automated reviews.
 
 
+> This is a detached fork of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent). PRs upstream are intentionally not opened from this repo; see the `upstream-sync` tracking issue for upstream changes.
+
 ## Sponsors
 
 PR-Agent is a community-maintained open-source project, with its ongoing development supported by our sponsors. If you'd like to support the project, consider [becoming a sponsor](https://github.com/sponsors/naorpeled).
