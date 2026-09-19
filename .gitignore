@@ -18,3 +18,28 @@ docs/site/
 .qodo
 poetry.lock
 .log
+
+# Local scratch space for agents and ad-hoc work (never commit)
+tmp/
+temp/
+
+# Secrets / credentials
+*.pem
+*.key
+*.secrets.toml
+secrets/
+.env.*
+!.env.example
+
+# Tooling caches and state
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.uv-cache/
+coverage.xml
+htmlcov/
+.coverage
+.aider*
+.cursor/
+.claude/
+.kilo/
