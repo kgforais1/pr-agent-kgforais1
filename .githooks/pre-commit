@@ -1,0 +1,3 @@
+#!/bin/sh
+# Shim: run the pre-commit framework against staged files when installed.
+command -v pre-commit >/dev/null 2>&1 && exec pre-commit run || exit 0
