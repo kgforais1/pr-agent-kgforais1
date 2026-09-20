@@ -65,6 +65,26 @@ def plan_path(directory: Path, slug: str) -> Path:
     return path
 
 
+_SAFE_PLAN_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
+
+
+def write_text_under(directory: Path, filename: str, content: str) -> Path:
+    """Write content to directory/filename after rejecting path traversal.
+
+    ``filename`` must be a bare ``slug.md`` (no separators). Used so filesystem
+    writes do not take a caller-supplied Path (Sonar pythonsecurity:S2083/S8707).
+    """
+    if not _SAFE_PLAN_NAME_RE.fullmatch(filename):
+        raise ValueError(f"invalid plan filename {filename!r}")
+    if "/" in filename or "\\" in filename or ".." in filename:
+        raise ValueError(f"path traversal rejected in filename {filename!r}")
+    base = directory.resolve()
+    path = (base / filename).resolve()
+    if path.parent != base:
+        raise ValueError(f"plan path escapes directory: {path}")
+    path.write_text(content, encoding="utf-8")
+    return path
+
 def is_checked_item(line: str) -> bool:
     return bool(CHECKED_RE.match(line))
 

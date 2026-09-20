@@ -27,14 +27,20 @@ from harness_lib import (  # noqa: E402
     parse_todo_items,
     plan_path,
     validate_slug,
+    write_text_under,
 )
 
 CHANGELOG_PATH = REPO_ROOT / "CHANGELOG.md"
 MAINTENANCE_PATH = REPO_ROOT / "MAINTENANCE.md"
+NONE_YET_RE = re.compile(r"^- \(none yet\b", re.IGNORECASE)
 
 
 def _run_git_mv(src: Path, dest: Path, *, dry_run: bool) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
+    if dest.exists():
+        raise SystemExit(
+            f"ERROR: archive — refusing to overwrite existing {dest.relative_to(REPO_ROOT)}"
+        )
     if dry_run:
         print(f"DRY-RUN: git mv {src.relative_to(REPO_ROOT)} -> {dest.relative_to(REPO_ROOT)}")
         return
@@ -47,6 +53,11 @@ def _run_git_mv(src: Path, dest: Path, *, dry_run: bool) -> None:
             text=True,
         )
     except subprocess.CalledProcessError:
+        if dest.exists():
+            raise SystemExit(
+                f"ERROR: archive — git mv failed and destination already exists: "
+                f"{dest.relative_to(REPO_ROOT)}"
+            ) from None
         shutil.move(str(src), str(dest))
 
 
@@ -58,7 +69,6 @@ def _set_status_and_outcomes(text: str, dest: str, message: str | None) -> str:
         count=1,
     )
     if n == 0:
-        # Insert after title line
         lines = text2.splitlines()
         insert_at = 1 if lines else 0
         lines.insert(insert_at, f"**Status:** {dest}")
@@ -82,6 +92,17 @@ def _set_status_and_outcomes(text: str, dest: str, message: str | None) -> str:
     return text2
 
 
+def _find_todo_item_for_slug(slug: str):
+    text = TODO_PATH.read_text(encoding="utf-8")
+    for item in parse_todo_items(text):
+        if slug in item.plan_slugs or f"active/{slug}.md" in item.text:
+            return item
+        bold = re.search(r"\*\*([^*]+)\*\*", item.first_line)
+        if bold and re.sub(r"[^a-z0-9]+", "-", bold.group(1).lower()).strip("-") == slug:
+            return item
+    return None
+
+
 def _remove_todo_block(slug: str, *, dry_run: bool) -> bool:
     text = TODO_PATH.read_text(encoding="utf-8")
     items = parse_todo_items(text)
@@ -99,8 +120,6 @@ def _remove_todo_block(slug: str, *, dry_run: bool) -> bool:
         return False
 
     start = target.start_line - 1
-    # end_line from parse is exclusive index into next item start in 1-based weirdness
-    # Reconstruct: find block end from plain lines
     end = start + 1
     while end < len(plain):
         if is_checkbox_item(plain[end]):
@@ -112,11 +131,11 @@ def _remove_todo_block(slug: str, *, dry_run: bool) -> bool:
         end += 1
 
     new_plain = plain[:start] + plain[end:]
-    # Drop trailing blank lines left in empty ### sections carefully — leave as-is
     new_text = "\n".join(new_plain) + ("\n" if text.endswith("\n") else "")
     if dry_run:
         print(f"DRY-RUN: remove TODO.md lines {start + 1}-{end}")
         return True
+    # TODO_PATH is a fixed repo-root constant (not CLI-derived).
     TODO_PATH.write_text(new_text, encoding="utf-8")
     return True
 
@@ -124,6 +143,13 @@ def _remove_todo_block(slug: str, *, dry_run: bool) -> bool:
 def _rewrite_links(slug: str, dest: str, *, dry_run: bool) -> None:
     old = f"docs/plans/active/{slug}.md"
     new = f"docs/plans/{dest}/{slug}.md"
+    replacements = (
+        (old, new),
+        (f"docs/plans/active/{slug}", f"docs/plans/{dest}/{slug}"),
+        (f"../active/{slug}.md", f"../{dest}/{slug}.md"),
+        (f"](active/{slug}.md)", f"]({dest}/{slug}.md)"),
+        (f"(active/{slug}.md)", f"({dest}/{slug}.md)"),
+    )
     roots = [
         REPO_ROOT / "docs",
         REPO_ROOT / "README.md",
@@ -145,10 +171,11 @@ def _rewrite_links(slug: str, dest: str, *, dry_run: bool) -> None:
         if not path.is_file():
             continue
         text = path.read_text(encoding="utf-8")
-        if old not in text and f"active/{slug}" not in text:
+        if f"active/{slug}" not in text:
             continue
-        updated = text.replace(old, new)
-        updated = updated.replace(f"docs/plans/active/{slug}", f"docs/plans/{dest}/{slug}")
+        updated = text
+        for old_s, new_s in replacements:
+            updated = updated.replace(old_s, new_s)
         if updated == text:
             continue
         if dry_run:
@@ -157,14 +184,24 @@ def _rewrite_links(slug: str, dest: str, *, dry_run: bool) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
-def _append_log(path: Path, bullet: str, *, dry_run: bool) -> None:
+def _log_path_for_kind(kind: str) -> Path:
+    """Resolve log path from a closed set of kinds (never from a free-form path)."""
+    if kind == "user":
+        return CHANGELOG_PATH
+    if kind == "maintenance":
+        return MAINTENANCE_PATH
+    raise SystemExit(f"unknown log kind: {kind}")
+
+
+def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
+    """Append under ## [Unreleased] / ### Added for a whitelist log kind."""
+    path = _log_path_for_kind(kind)
     if not path.is_file():
         raise SystemExit(f"log file missing: {path}")
     text = path.read_text(encoding="utf-8")
     marker = "## [Unreleased]"
     if marker not in text:
         raise SystemExit(f"{path.name} missing {marker} section")
-    # Insert under ### Added if present, else after Unreleased
     lines = text.splitlines()
     out: list[str] = []
     i = 0
@@ -172,15 +209,18 @@ def _append_log(path: Path, bullet: str, *, dry_run: bool) -> None:
     while i < len(lines):
         out.append(lines[i])
         if not inserted and lines[i].strip() == marker:
-            # look ahead for ### Added
             j = i + 1
             while j < len(lines) and lines[j].strip() == "":
                 out.append(lines[j])
                 j += 1
             if j < len(lines) and lines[j].strip() == "### Added":
                 out.append(lines[j])
+                j += 1
+                # Drop recognized empty-state placeholders before first real bullet.
+                while j < len(lines) and NONE_YET_RE.match(lines[j].strip()):
+                    j += 1
                 out.append(f"- {bullet}")
-                i = j
+                i = j - 1
                 inserted = True
             else:
                 out.append("")
@@ -197,6 +237,19 @@ def _append_log(path: Path, bullet: str, *, dry_run: bool) -> None:
     path.write_text(new_text, encoding="utf-8")
 
 
+def _refresh_pr_pending_for_slug(text: str, slug: str, pr: int) -> str:
+    """Replace 'PR pending' only on lines that mention this slug."""
+    if pr <= 0 or "PR pending" not in text:
+        return text
+    out: list[str] = []
+    for line in text.splitlines():
+        if "PR pending" in line and (f"`{slug}`" in line or f"/{slug}" in line or slug in line):
+            out.append(line.replace("PR pending", f"PR #{pr}"))
+        else:
+            out.append(line)
+    return "\n".join(out) + ("\n" if text.endswith("\n") else "")
+
+
 def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dry_run: bool) -> None:
     """Append or refresh the Unreleased log bullet for this slug (idempotent)."""
     today = dt.date.today().isoformat()
@@ -206,38 +259,29 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
     else:
         bullet = f"Archived plan `{slug}` → `docs/plans/` ({pr_label}, {today})"
 
-    targets: list[Path] = []
+    kinds: list[str] = []
     if kind in ("maintenance", "both"):
-        targets.append(MAINTENANCE_PATH)
+        kinds.append("maintenance")
     if kind in ("user", "both"):
-        targets.append(CHANGELOG_PATH)
+        kinds.append("user")
 
-    for path in targets:
+    for log_kind in kinds:
+        path = _log_path_for_kind(log_kind)
         text = path.read_text(encoding="utf-8")
         mentions = f"`{slug}`" in text or f"/{slug}" in text
         if message and message[:48] in text:
             mentions = True
-        if mentions or (pr > 0 and "PR pending" in text and slug.replace("-", " ")[:12] in text.lower()):
-            if pr > 0 and "PR pending" in text:
-                updated = text.replace("PR pending", f"PR #{pr}")
-                if updated != text:
-                    if dry_run:
-                        print(f"DRY-RUN: refresh PR # in {path.name}")
-                    else:
-                        path.write_text(updated, encoding="utf-8")
-                    continue
-            if dry_run:
+        if mentions:
+            updated = _refresh_pr_pending_for_slug(text, slug, pr)
+            if updated != text:
+                if dry_run:
+                    print(f"DRY-RUN: refresh PR # for {slug!r} in {path.name}")
+                else:
+                    path.write_text(updated, encoding="utf-8")
+            elif dry_run:
                 print(f"DRY-RUN: log already mentions {slug!r} in {path.name}")
             continue
-        # Also refresh lone PR pending when converging this harness close
-        if pr > 0 and "PR pending" in text and "Repo harness Phase A" in text:
-            updated = text.replace("PR pending", f"PR #{pr}")
-            if dry_run:
-                print(f"DRY-RUN: refresh harness PR # in {path.name}")
-            else:
-                path.write_text(updated, encoding="utf-8")
-            continue
-        _append_log(path, bullet, dry_run=dry_run)
+        _append_log(log_kind, bullet, dry_run=dry_run)
 
 
 def archive(
@@ -266,6 +310,13 @@ def archive(
             "resolve manually before re-running"
         )
 
+    # Preflight: validate TODO before any filesystem mutation.
+    if not already and require_todo and _find_todo_item_for_slug(slug) is None:
+        raise SystemExit(
+            f"ERROR: archive — TODO.md:1 no open bullet found for slug {slug!r}; "
+            "same-PR close requires removing the TODO item (checked before archive)"
+        )
+
     if already:
         print(f"already archived: {dest_path.relative_to(REPO_ROOT)} — converging TODO/log")
     elif not src.is_file():
@@ -273,8 +324,10 @@ def archive(
     else:
         text = src.read_text(encoding="utf-8")
         updated = _set_status_and_outcomes(text, dest, message)
+        content = updated if updated.endswith("\n") else updated + "\n"
         if not dry_run:
-            src.write_text(updated if updated.endswith("\n") else updated + "\n", encoding="utf-8")
+            # Write via whitelist directory + validated slug basename (Sonar S2083/S8707).
+            write_text_under(ACTIVE_DIR, f"{slug}.md", content)
         else:
             print(f"DRY-RUN: would set status={dest} and outcomes on {slug}")
         _run_git_mv(src, dest_path, dry_run=dry_run)

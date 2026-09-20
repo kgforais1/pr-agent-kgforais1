@@ -19,8 +19,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pytest (pinned; harness scripts are stdlib-only)
-        run: python3 -m pip install --disable-pip-version-check "pytest==9.1.1"
+      - name: Install pytest (pinned wheels only; harness scripts are stdlib-only)
+        run: >-
+          python3 -m pip install --disable-pip-version-check
+          --only-binary=:all: "pytest==9.1.1"
 
       - name: Check TODO.md
         run: python3 scripts/check_todo.py --strict-anchors

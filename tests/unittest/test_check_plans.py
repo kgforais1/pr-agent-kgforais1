@@ -56,3 +56,29 @@ def test_outcomes_min_length_for_completed(
     )
     errors = mod.check_plans(allow_empty_archives=True)
     assert any("Outcomes & retrospective" in e for e in errors)
+
+
+def test_requires_exact_headings(tmp_path, monkeypatch, load_harness_script, patch_plans_module):
+    mod = load_harness_script("check_plans")
+    dirs = patch_plans_module(mod, monkeypatch, tmp_path)
+    bad = MINIMAL.format(status="active", outcomes="x").replace("## Purpose", "## Purposeful")
+    (dirs["active"] / "bad-heading.md").write_text(bad, encoding="utf-8")
+    errors = mod.check_plans(allow_empty_archives=True)
+    assert any("## Purpose" in e for e in errors)
+
+
+def test_superseded_requires_replacement_link(
+    tmp_path, monkeypatch, load_harness_script, patch_plans_module
+):
+    mod = load_harness_script("check_plans")
+    dirs = patch_plans_module(mod, monkeypatch, tmp_path)
+    outcomes = (
+        "There is no replacement for this work, but we still archived it with enough "
+        "retrospective text to satisfy the minimum outcomes length requirement."
+    )
+    (dirs["superseded"] / "old.md").write_text(
+        MINIMAL.format(status="superseded", outcomes=outcomes),
+        encoding="utf-8",
+    )
+    errors = mod.check_plans(allow_empty_archives=True)
+    assert any("replacement" in e for e in errors)

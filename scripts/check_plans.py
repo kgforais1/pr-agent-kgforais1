@@ -38,6 +38,14 @@ FOLDER_STATUS = {
 }
 
 MIN_OUTCOMES_CHARS = 100
+REPLACEMENT_LINK_RE = re.compile(
+    r"docs/plans/(?:active|completed|deferred|superseded)/[a-z0-9][a-z0-9-]*\.md"
+)
+
+
+def _has_exact_heading(text: str, heading: str) -> bool:
+    """True when a line equals the required heading (not a substring match)."""
+    return any(line.rstrip() == heading for line in text.splitlines())
 
 
 def check_plans(*, allow_empty_archives: bool) -> list[str]:
@@ -47,17 +55,9 @@ def check_plans(*, allow_empty_archives: bool) -> list[str]:
         if not directory.is_dir():
             if directory is ACTIVE_DIR:
                 errors.append(error("plans", directory, 1, "active/ directory missing"))
-            elif not allow_empty_archives:
-                # Missing archive dirs are OK if allow_empty; create advice for Phase A
-                pass
             continue
 
-        plans = iter_plan_files(directory)
-        if not plans and directory is not ACTIVE_DIR and not allow_empty_archives:
-            # Empty archive dirs with .gitkeep only are fine
-            pass
-
-        for path in plans:
+        for path in iter_plan_files(directory):
             text = path.read_text(encoding="utf-8")
             status = read_status(path)
             if status is None:
@@ -75,11 +75,12 @@ def check_plans(*, allow_empty_archives: bool) -> list[str]:
                 )
 
             for heading in REQUIRED_PLAN_HEADINGS:
-                if heading not in text:
+                if not _has_exact_heading(text, heading):
                     errors.append(
                         error("plans", path, 1, f"missing required heading {heading!r}")
                     )
 
+            outcomes = ""
             if expected_status != "active":
                 outcomes = section_body(text, "## Outcomes & retrospective")
                 if len(outcomes) < MIN_OUTCOMES_CHARS:
@@ -94,19 +95,17 @@ def check_plans(*, allow_empty_archives: bool) -> list[str]:
                     )
 
             if expected_status == "superseded":
-                if "docs/plans/" not in outcomes and "replacement" not in outcomes.lower():
-                    # Prefer an explicit link to another plan
-                    if not re.search(r"docs/plans/(active|completed|deferred|superseded)/", text):
-                        errors.append(
-                            error(
-                                "plans",
-                                path,
-                                1,
-                                "superseded plan must link a replacement under docs/plans/",
-                            )
+                if not REPLACEMENT_LINK_RE.search(outcomes):
+                    errors.append(
+                        error(
+                            "plans",
+                            path,
+                            1,
+                            "superseded plan Outcomes must link a replacement under "
+                            "docs/plans/<folder>/<slug>.md",
                         )
+                    )
 
-    # Ensure archive directories exist (create guidance) when not allowing empty bootstrap
     if not allow_empty_archives:
         for name, directory in ARCHIVE_DIRS.items():
             if not directory.is_dir():
