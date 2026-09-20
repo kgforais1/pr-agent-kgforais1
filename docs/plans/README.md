@@ -1,8 +1,7 @@
 # Plans
 
-Durable execution plans for substantial repo work. Ephemeral scratch notes stay in
-gitignored `tmp/`; anything that must survive agent sessions, PR handoffs, or local
-cleanup is promoted here.
+`docs/plans/` and `docs/process/` are agent/maintainer docs (not in the public MkDocs
+nav). See [PLANS.md](PLANS.md) for authoring rules.
 
 ## Layout
 
@@ -16,8 +15,8 @@ cleanup is promoted here.
 
 ## Lifecycle (target state)
 
-See [active/plan-lifecycle-harness.md](active/plan-lifecycle-harness.md) for the
-full design. Summary:
+See [completed/plan-lifecycle-harness.md](completed/plan-lifecycle-harness.md) for the
+full design (archived). Summary:
 
 1. **Open** — `TODO.md` lists only unfinished work; each item may link to an ExecPlan
    under `active/`.

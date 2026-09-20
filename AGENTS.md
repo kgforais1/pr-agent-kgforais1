@@ -11,6 +11,16 @@ This file is the shared source of repository guidance for coding agents. Tool-sp
 - **Don’t** reformat or reorder files globally; match existing 120-character lines, import ordering, and docstring style.
 - **Don’t** delete or rename configuration, prompt, or workflow files without maintainer approval.
 
+## Repository process
+
+- Read [`TODO.md`](TODO.md) at session start (open backlog only — no Done section).
+- Durable ExecPlans live under [`docs/plans/`](docs/plans/README.md) (`active/`, `completed/`, `deferred/`, `superseded/`). Authoring rules: [`docs/plans/PLANS.md`](docs/plans/PLANS.md).
+- Session checklist: [`docs/process/agent-session.md`](docs/process/agent-session.md). Conventions: [`docs/process/todo-conventions.md`](docs/process/todo-conventions.md).
+- User-facing changes → [`CHANGELOG.md`](CHANGELOG.md); harness/CI/refactors/process → [`MAINTENANCE.md`](MAINTENANCE.md). Semver notes: [`docs/process/semver.md`](docs/process/semver.md).
+- Substantive plans must be in the repo (not only gitignored `tmp/`). On ship/defer/supersede: remove the TODO item, archive the plan, and log on the **same PR** (`python3 scripts/archive_plan.py`).
+- When writing complex features or significant refactors, use an ExecPlan (as described in `docs/plans/PLANS.md`) from design to implementation.
+- Local hooks: `git config core.hooksPath .githooks` (includes `pre-push`, `pre-commit` shim, and soft `commit-msg` hint for active plans).
+
 ## Project Structure and Module Organization
 
 PR-Agent automates AI-assisted reviews for pull requests across multiple git providers.

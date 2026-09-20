@@ -1,0 +1,2 @@
+# One slug per line (kebab-case). Optional allowlist for plan-less TODO items.
+# Prefer <!-- no-plan: … --> on the bullet when possible.

@@ -1,19 +1,26 @@
 # Changelog
 
-**Release notes now live on GitHub.** The authoritative, per-release changelog is the
-[Releases page](https://github.com/The-PR-Agent/pr-agent/releases), which is generated from the
-merged pull requests of each release. This file is no longer updated per release.
+Fork-specific user-facing changes for `kgforais1/pr-agent-kgforais1` (detached
+2026-09-19). Under-the-hood harness, CI, and process work lives in
+[MAINTENANCE.md](MAINTENANCE.md).
 
-To see what changed between two versions, use the compare view — for example
-[`v0.40.0...v0.41.0`](https://github.com/The-PR-Agent/pr-agent/compare/v0.40.0...v0.41.0).
+Upstream PR-Agent historically published release notes on GitHub Releases; that
+policy does not apply to this fork until the packaging audit decides otherwise.
+See [docs/process/semver.md](docs/process/semver.md).
+
+## [Unreleased]
+
+### Added
+
+- (none yet — harness scaffolding is logged in MAINTENANCE.md)
 
 ---
 
-## Archive
+## Archive (upstream, pre-fork)
 
-The entries below are a partial, date-based log kept in this file during July–August 2023, before
-the project switched to GitHub Releases. They stop at `2023-08-03` and are retained for history
-only; they do **not** describe any release after that date.
+The entries below are a partial, date-based log kept during July–August 2023, before
+upstream switched to GitHub Releases. They stop at `2023-08-03` and are retained for
+history only; they do **not** describe any release after that date, nor this fork.
 
 ### 2023-08-03
 

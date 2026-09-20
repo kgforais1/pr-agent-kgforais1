@@ -1,0 +1,13 @@
+#!/bin/sh
+# Soft hint (always exit 0): active plan edits without TODO.md in the same commit.
+# Enable with: git config core.hooksPath .githooks
+# Not a pre-commit framework hook — git-native commit-msg only.
+
+staged=$(git diff --cached --name-only 2>/dev/null) || exit 0
+
+echo "$staged" | grep -q 'docs/plans/active/' || exit 0
+echo "$staged" | grep -q '^TODO\.md$' && exit 0
+
+echo "commit-msg hint: docs/plans/active/ changed without TODO.md in this commit." >&2
+echo "  If you are closing work, run: python3 scripts/archive_plan.py --dry-run --slug <slug> --pr <N>" >&2
+exit 0

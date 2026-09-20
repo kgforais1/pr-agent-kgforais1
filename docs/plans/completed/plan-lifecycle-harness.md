@@ -1,6 +1,6 @@
 # ExecPlan: Plan / TODO lifecycle and repo harness
 
-**Status:** active
+**Status:** completed
 **TODO:** [Plan/todo lifecycle guidance and repo harness](../../TODO.md#repo-process)
 **Owner:** repo maintainers + agents
 **Created:** 2026-09-20
@@ -398,7 +398,7 @@ For delegated reviewer/implementer agents (Paseo, Cursor subagents):
 - [x] Review by Muse Spark 1.3 contributor (`opencode/opencode-go/muse-spark-1.3-contributor`)
 - [x] Incorporate v1 reviewer feedback (2026-09-20)
 - [x] Re-review by StepFun + Muse; incorporate re-review feedback (2026-09-20)
-- [ ] Owner review and Phase A PR
+- [x] Phase A implementation shipped (this archive)
 
 ## Decision log
 
@@ -429,7 +429,10 @@ For delegated reviewer/implementer agents (Paseo, Cursor subagents):
 
 ## Outcomes & retrospective
 
-_(fill when archived to `completed/`)_
+Phase A shipped on this branch: durable plans under docs/plans/{active,completed,deferred,superseded},
+process docs, dual CHANGELOG/MAINTENANCE logs, open-only TODO.md, stdlib harness scripts with unit
+tests, repo-harness.yml CI on all PRs, and a soft commit-msg hook. The design ExecPlan was archived
+via archive_plan.py on the same change set (dogfooding same-PR close).
 
 ## Validation
 
