@@ -82,3 +82,44 @@ def test_superseded_requires_replacement_link(
     )
     errors = mod.check_plans(allow_empty_archives=True)
     assert any("replacement" in e for e in errors)
+
+
+def test_superseded_accepts_relative_replacement_link(
+    tmp_path, monkeypatch, load_harness_script, patch_plans_module
+):
+    mod = load_harness_script("check_plans")
+    dirs = patch_plans_module(mod, monkeypatch, tmp_path)
+    (dirs["active"] / "successor.md").write_text(
+        MINIMAL.format(status="active", outcomes="x"),
+        encoding="utf-8",
+    )
+    outcomes = (
+        "Superseded by the successor plan after enough retrospective detail. "
+        "See [successor](../active/successor.md) for the continuing workstream."
+    )
+    (dirs["superseded"] / "old.md").write_text(
+        MINIMAL.format(status="superseded", outcomes=outcomes),
+        encoding="utf-8",
+    )
+    import harness_lib as hl
+
+    monkeypatch.setattr(hl, "PLANS_ROOT", tmp_path)
+    errors = mod.check_plans(allow_empty_archives=True)
+    assert not any("replacement" in e for e in errors)
+
+
+def test_superseded_rejects_broken_docs_plans_link(
+    tmp_path, monkeypatch, load_harness_script, patch_plans_module
+):
+    mod = load_harness_script("check_plans")
+    dirs = patch_plans_module(mod, monkeypatch, tmp_path)
+    outcomes = (
+        "Claimed successor is missing on disk, with enough retrospective text here. "
+        "See [missing](docs/plans/active/does-not-exist.md) which should fail validation."
+    )
+    (dirs["superseded"] / "old.md").write_text(
+        MINIMAL.format(status="superseded", outcomes=outcomes),
+        encoding="utf-8",
+    )
+    errors = mod.check_plans(allow_empty_archives=True)
+    assert any("replacement" in e for e in errors)

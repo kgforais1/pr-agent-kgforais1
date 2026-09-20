@@ -10,7 +10,6 @@ Requirements: Python 3.12+ stdlib only.
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
@@ -21,10 +20,12 @@ from harness_lib import (  # noqa: E402
     ARCHIVE_DIRS,
     COMPLETED_DIR,
     DEFERRED_DIR,
+    MIN_OUTCOMES_CHARS,
     PLANS_ROOT,
     REQUIRED_PLAN_HEADINGS,
     SUPERSEDED_DIR,
     error,
+    has_valid_replacement_link,
     iter_plan_files,
     read_status,
     section_body,
@@ -36,11 +37,6 @@ FOLDER_STATUS = {
     DEFERRED_DIR: "deferred",
     SUPERSEDED_DIR: "superseded",
 }
-
-MIN_OUTCOMES_CHARS = 100
-REPLACEMENT_LINK_RE = re.compile(
-    r"docs/plans/(?:active|completed|deferred|superseded)/[a-z0-9][a-z0-9-]*\.md"
-)
 
 
 def _has_exact_heading(text: str, heading: str) -> bool:
@@ -95,14 +91,15 @@ def check_plans(*, allow_empty_archives: bool) -> list[str]:
                     )
 
             if expected_status == "superseded":
-                if not REPLACEMENT_LINK_RE.search(outcomes):
+                if not has_valid_replacement_link(outcomes, path):
                     errors.append(
                         error(
                             "plans",
                             path,
                             1,
-                            "superseded plan Outcomes must link a replacement under "
-                            "docs/plans/<folder>/<slug>.md",
+                            "superseded plan Outcomes must Markdown-link an existing "
+                            "replacement under docs/plans/<folder>/<slug>.md "
+                            "(repo-relative or ../<folder>/<slug>.md)",
                         )
                     )
 

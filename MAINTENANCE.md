@@ -12,9 +12,7 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
   `TODO.md`, stdlib scripts (`check_todo`/`check_plans`/`archive_plan`/`new_plan`),
   `.github/workflows/repo-harness.yml`, pre-commit harness hooks, and git-native
   `.githooks/commit-msg` soft hint (plan `plan-lifecycle-harness`; PR #9, 2026-09-20).
-- SonarCloud hardening for PR #9: slug path validation (`validate_slug`/`plan_path`),
-  heading regex without super-linear backtracking, harness CI without `uv` (pinned
-  pytest wheels via `--only-binary=:all:`), shared harness fixtures in
-  `tests/unittest/conftest.py`, archive preflight/collision/log scoping, exact
-  plan-heading / superseded-link checks, log writes to path constants only, and
-  `COPY scripts` in the Docker `test` image so harness unit tests resolve.
+- SonarCloud / CodeRabbit hardening for PR #9: slug path validation, heading regex,
+  wheel-only pytest in harness CI, archive preflight (TODO + logs + outcomes /
+  replacement), slug-tagged log bullets, resolved Markdown replacement links,
+  allowlisted `no-plan` reasons, and `../../../TODO.md` links from plan trees.

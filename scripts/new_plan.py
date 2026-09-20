@@ -19,7 +19,7 @@ from harness_lib import ACTIVE_DIR, PLANS_ROOT, REPO_ROOT, validate_slug  # noqa
 TEMPLATE = """# {title}
 
 **Status:** active
-**TODO:** [link from TODO.md](../../TODO.md)
+**TODO:** [link from TODO.md](../../../TODO.md)
 **Created:** {today}
 
 This ExecPlan is a living document. Maintain Progress, Surprises & discoveries,

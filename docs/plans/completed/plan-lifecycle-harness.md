@@ -1,7 +1,7 @@
 # ExecPlan: Plan / TODO lifecycle and repo harness
 
 **Status:** completed
-**TODO:** [Plan/todo lifecycle guidance and repo harness](../../TODO.md#repo-process)
+**TODO:** [Plan/todo lifecycle guidance and repo harness](../../../TODO.md#repo-process)
 **Owner:** repo maintainers + agents
 **Created:** 2026-09-20
 

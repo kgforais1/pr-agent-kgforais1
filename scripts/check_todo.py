@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from harness_lib import (  # noqa: E402
     ACTIVE_DIR,
+    ALLOWED_NO_PLAN_REASONS,
     HEADING_RE,
     REPO_ROOT,
     TODO_PATH,
@@ -96,10 +97,20 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
                 )
 
         if needs_plan_link(item.text) and not item.plan_slugs:
-            if item.no_plan_reason or any(s in item.text for s in exempt_slugs):
+            reason = item.no_plan_reason
+            if reason is not None and reason not in ALLOWED_NO_PLAN_REASONS:
+                errors.append(
+                    error(
+                        "todo",
+                        TODO_PATH,
+                        item.start_line,
+                        f"unknown no-plan reason {reason!r}; allowed: "
+                        + ", ".join(sorted(ALLOWED_NO_PLAN_REASONS)),
+                    )
+                )
+            elif reason in ALLOWED_NO_PLAN_REASONS:
                 pass
             else:
-                # Also allow exempt file match on bold slug-ish title
                 bold = re.search(r"\*\*([^*]+)\*\*", item.first_line)
                 title = bold.group(1).lower() if bold else ""
                 slug_guess = re.sub(r"[^a-z0-9]+", "-", title).strip("-")

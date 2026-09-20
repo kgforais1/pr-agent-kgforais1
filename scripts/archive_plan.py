@@ -24,11 +24,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from harness_lib import (  # noqa: E402
     ACTIVE_DIR,
     ARCHIVE_DIRS,
+    MIN_OUTCOMES_CHARS,
     REPO_ROOT,
     TODO_PATH,
+    has_valid_replacement_link,
     is_checkbox_item,
     parse_todo_items,
     plan_path,
+    section_body,
     validate_slug,
     write_text_under,
 )
@@ -296,7 +299,8 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
     today = dt.date.today().isoformat()
     pr_label = "PR pending" if pr <= 0 else f"PR #{pr}"
     if message:
-        bullet = f"{message.rstrip('.')} ({pr_label}, {today})"
+        # Include `{slug}` so _refresh_pr_pending_for_slug can locate this bullet.
+        bullet = f"{message.rstrip('.')} (`{slug}`; {pr_label}, {today})"
     else:
         bullet = f"Archived plan `{slug}` → `docs/plans/` ({pr_label}, {today})"
 
@@ -310,8 +314,6 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
         if log_kind == "maintenance":
             text = MAINTENANCE_PATH.read_text(encoding="utf-8")
             mentions = f"`{slug}`" in text or f"/{slug}" in text
-            if message and message[:48] in text:
-                mentions = True
             if mentions:
                 updated = _refresh_pr_pending_for_slug(text, slug, pr)
                 if updated != text:
@@ -328,8 +330,6 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
         # log_kind == "user"
         text = CHANGELOG_PATH.read_text(encoding="utf-8")
         mentions = f"`{slug}`" in text or f"/{slug}" in text
-        if message and message[:48] in text:
-            mentions = True
         if mentions:
             updated = _refresh_pr_pending_for_slug(text, slug, pr)
             if updated != text:
@@ -341,6 +341,61 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
                 print(f"DRY-RUN: log already mentions {slug!r} in {CHANGELOG_PATH.name}")
             continue
         _append_log("user", bullet, dry_run=dry_run)
+
+
+def _log_kinds_for(kind: str) -> list[str]:
+    kinds: list[str] = []
+    if kind in ("maintenance", "both"):
+        kinds.append("maintenance")
+    if kind in ("user", "both"):
+        kinds.append("user")
+    return kinds
+
+
+def _preflight_log_targets(kind: str) -> None:
+    """Ensure selected log files exist and have ## [Unreleased] before mutation."""
+    for log_kind in _log_kinds_for(kind):
+        path = CHANGELOG_PATH if log_kind == "user" else MAINTENANCE_PATH
+        if not path.is_file():
+            raise SystemExit(f"ERROR: archive — log file missing: {path}")
+        text = path.read_text(encoding="utf-8")
+        if "## [Unreleased]" not in text:
+            raise SystemExit(f"ERROR: archive — {path.name} missing ## [Unreleased] section")
+
+
+def _preflight_archive_content(
+    text: str,
+    *,
+    dest: str,
+    message: str | None,
+    dest_path: Path,
+) -> str:
+    """Validate status/outcomes/replacement before any filesystem write; return updated text."""
+    updated = _set_status_and_outcomes(text, dest, message)
+    status = None
+    for line in updated.splitlines()[:10]:
+        m = re.search(r"\*\*Status:\*\*\s*(active|completed|deferred|superseded)\b", line)
+        if m:
+            status = m.group(1)
+            break
+    if status != dest:
+        raise SystemExit(
+            f"ERROR: archive — prepared status {status!r} does not match destination {dest!r}"
+        )
+
+    if dest != "active":
+        outcomes = section_body(updated, "## Outcomes & retrospective")
+        if len(outcomes) < MIN_OUTCOMES_CHARS:
+            raise SystemExit(
+                f"ERROR: archive — Outcomes & retrospective must be ≥{MIN_OUTCOMES_CHARS} chars "
+                f"before archive (got {len(outcomes)}); pass --message with enough detail"
+            )
+        if dest == "superseded" and not has_valid_replacement_link(outcomes, dest_path):
+            raise SystemExit(
+                "ERROR: archive — superseded Outcomes must Markdown-link an existing "
+                "replacement plan under docs/plans/<folder>/<slug>.md before archive"
+            )
+    return updated if updated.endswith("\n") else updated + "\n"
 
 
 def archive(
@@ -369,24 +424,26 @@ def archive(
             "resolve manually before re-running"
         )
 
-    # Preflight: validate TODO before any filesystem mutation.
+    # Preflight everything before any filesystem mutation.
+    _preflight_log_targets(kind)
     if not already and require_todo and _find_todo_item_for_slug(slug) is None:
         raise SystemExit(
             f"ERROR: archive — TODO.md:1 no open bullet found for slug {slug!r}; "
             "same-PR close requires removing the TODO item (checked before archive)"
         )
 
+    prepared: str | None = None
     if already:
         print(f"already archived: {dest_path.relative_to(REPO_ROOT)} — converging TODO/log")
     elif not src.is_file():
         raise SystemExit(f"active plan not found: {src.relative_to(REPO_ROOT)}")
     else:
         text = src.read_text(encoding="utf-8")
-        updated = _set_status_and_outcomes(text, dest, message)
-        content = updated if updated.endswith("\n") else updated + "\n"
+        prepared = _preflight_archive_content(
+            text, dest=dest, message=message, dest_path=dest_path
+        )
         if not dry_run:
-            # Write via whitelist directory + validated slug basename (Sonar S2083/S8707).
-            write_text_under(ACTIVE_DIR, f"{slug}.md", content)
+            write_text_under(ACTIVE_DIR, f"{slug}.md", prepared)
         else:
             print(f"DRY-RUN: would set status={dest} and outcomes on {slug}")
         _run_git_mv(src, dest_path, dry_run=dry_run)

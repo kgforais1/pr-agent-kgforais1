@@ -20,6 +20,11 @@ ARCHIVE_DIRS = {
     "superseded": SUPERSEDED_DIR,
 }
 EXEMPT_FILE = REPO_ROOT / "docs" / "process" / "todo-exempt.txt"
+ALLOWED_NO_PLAN_REASONS = frozenset({"owner-web-ui", "pending-execplan", "typo"})
+MIN_OUTCOMES_CHARS = 100
+ALLOWED_PLAN_FOLDERS = frozenset({"active", "completed", "deferred", "superseded"})
+MD_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+PLAN_BASENAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
 
 STATUS_RE = re.compile(r"\*\*Status:\*\*\s*(active|completed|deferred|superseded)\b")
 PLAN_LINK_RE = re.compile(
@@ -201,3 +206,47 @@ def section_body(text: str, heading: str) -> str:
         if capturing:
             body.append(line)
     return "\n".join(body).strip()
+
+
+def iter_markdown_link_targets(text: str) -> list[str]:
+    """Return href targets from Markdown ``[text](target)`` links (anchors stripped)."""
+    targets: list[str] = []
+    for match in MD_LINK_RE.finditer(text):
+        href = match.group(2).strip().split("#", 1)[0].strip()
+        if href:
+            targets.append(href)
+    return targets
+
+
+def resolve_plan_link_target(plan_path: Path, href: str) -> Path | None:
+    """Resolve a Markdown href to a path under docs/plans/<lifecycle>/<slug>.md.
+
+    Accepts repo-relative ``docs/plans/...`` and relative links such as
+    ``../active/<slug>.md``. Returns None when the link is external, escapes
+    the plans tree, or does not name a kebab-case plan file.
+    """
+    if not href or href.startswith(("http://", "https://", "mailto:", "//")):
+        return None
+    if href.startswith("docs/plans/"):
+        candidate = (REPO_ROOT / href).resolve()
+    else:
+        candidate = (plan_path.parent / href).resolve()
+    try:
+        rel = candidate.relative_to(PLANS_ROOT.resolve())
+    except ValueError:
+        return None
+    if len(rel.parts) != 2:
+        return None
+    folder, name = rel.parts
+    if folder not in ALLOWED_PLAN_FOLDERS or not PLAN_BASENAME_RE.fullmatch(name):
+        return None
+    return candidate
+
+
+def has_valid_replacement_link(outcomes: str, plan_path: Path) -> bool:
+    """True when Outcomes contains a Markdown link to an existing plan file."""
+    for href in iter_markdown_link_targets(outcomes):
+        target = resolve_plan_link_target(plan_path, href)
+        if target is not None and target.is_file():
+            return True
+    return False

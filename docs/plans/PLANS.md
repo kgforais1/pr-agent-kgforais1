@@ -84,7 +84,7 @@ are permitted only in the Progress section, where they are mandatory.
     # <Short, action-oriented description>
 
     **Status:** active
-    **TODO:** [link](../../TODO.md#anchor)
+    **TODO:** [link](../../../TODO.md#anchor)
     **Created:** YYYY-MM-DD
 
     This ExecPlan is a living document. Maintain Progress, Surprises & discoveries,
