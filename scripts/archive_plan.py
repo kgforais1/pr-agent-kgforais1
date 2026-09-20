@@ -23,8 +23,8 @@ from harness_lib import (  # noqa: E402
     ARCHIVE_DIRS,
     REPO_ROOT,
     TODO_PATH,
+    is_checkbox_item,
     parse_todo_items,
-    read_status,
 )
 
 CHANGELOG_PATH = REPO_ROOT / "CHANGELOG.md"
@@ -101,7 +101,7 @@ def _remove_todo_block(slug: str, *, dry_run: bool) -> bool:
     # Reconstruct: find block end from plain lines
     end = start + 1
     while end < len(plain):
-        if plain[end].startswith("- [ ") or plain[end].startswith("- [x]"):
+        if is_checkbox_item(plain[end]):
             break
         if re.match(r"^## ", plain[end]):
             break
@@ -195,6 +195,49 @@ def _append_log(path: Path, bullet: str, *, dry_run: bool) -> None:
     path.write_text(new_text, encoding="utf-8")
 
 
+def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dry_run: bool) -> None:
+    """Append or refresh the Unreleased log bullet for this slug (idempotent)."""
+    today = dt.date.today().isoformat()
+    pr_label = "PR pending" if pr <= 0 else f"PR #{pr}"
+    if message:
+        bullet = f"{message.rstrip('.')} ({pr_label}, {today})"
+    else:
+        bullet = f"Archived plan `{slug}` → `docs/plans/` ({pr_label}, {today})"
+
+    targets: list[Path] = []
+    if kind in ("maintenance", "both"):
+        targets.append(MAINTENANCE_PATH)
+    if kind in ("user", "both"):
+        targets.append(CHANGELOG_PATH)
+
+    for path in targets:
+        text = path.read_text(encoding="utf-8")
+        mentions = f"`{slug}`" in text or f"/{slug}" in text
+        if message and message[:48] in text:
+            mentions = True
+        if mentions or (pr > 0 and "PR pending" in text and slug.replace("-", " ")[:12] in text.lower()):
+            if pr > 0 and "PR pending" in text:
+                updated = text.replace("PR pending", f"PR #{pr}")
+                if updated != text:
+                    if dry_run:
+                        print(f"DRY-RUN: refresh PR # in {path.name}")
+                    else:
+                        path.write_text(updated, encoding="utf-8")
+                    continue
+            if dry_run:
+                print(f"DRY-RUN: log already mentions {slug!r} in {path.name}")
+            continue
+        # Also refresh lone PR pending when converging this harness close
+        if pr > 0 and "PR pending" in text and "Repo harness Phase A" in text:
+            updated = text.replace("PR pending", f"PR #{pr}")
+            if dry_run:
+                print(f"DRY-RUN: refresh harness PR # in {path.name}")
+            else:
+                path.write_text(updated, encoding="utf-8")
+            continue
+        _append_log(path, bullet, dry_run=dry_run)
+
+
 def archive(
     slug: str,
     pr: int,
@@ -203,54 +246,39 @@ def archive(
     message: str | None,
     *,
     dry_run: bool,
+    require_todo: bool = True,
 ) -> int:
     src = ACTIVE_DIR / f"{slug}.md"
     dest_dir = ARCHIVE_DIRS[dest]
     dest_path = dest_dir / f"{slug}.md"
+    already = dest_path.is_file() and not src.is_file()
 
-    if dest_path.is_file() and not src.is_file():
-        print(f"already archived: {dest_path.relative_to(REPO_ROOT)}")
-        return 0
-    if not src.is_file():
+    if already:
+        print(f"already archived: {dest_path.relative_to(REPO_ROOT)} — converging TODO/log")
+    elif not src.is_file():
         raise SystemExit(f"active plan not found: {src.relative_to(REPO_ROOT)}")
-
-    text = src.read_text(encoding="utf-8")
-    if read_status(src) and read_status(src) != "active" and not dry_run:
-        # still allow move
-        pass
-
-    updated = _set_status_and_outcomes(text, dest, message)
-    if not dry_run:
-        # Write status into src before move so content is correct
-        src.write_text(updated if updated.endswith("\n") else updated + "\n", encoding="utf-8")
     else:
-        print(f"DRY-RUN: would set status={dest} and outcomes on {slug}")
-
-    _run_git_mv(src, dest_path, dry_run=dry_run)
-    if dry_run and not dest_path.is_file():
-        # still continue dry-run path
-        pass
+        text = src.read_text(encoding="utf-8")
+        updated = _set_status_and_outcomes(text, dest, message)
+        if not dry_run:
+            src.write_text(updated if updated.endswith("\n") else updated + "\n", encoding="utf-8")
+        else:
+            print(f"DRY-RUN: would set status={dest} and outcomes on {slug}")
+        _run_git_mv(src, dest_path, dry_run=dry_run)
 
     removed = _remove_todo_block(slug, dry_run=dry_run)
-    if not removed:
-        print(f"warning: no TODO.md block found for slug {slug!r}", file=sys.stderr)
+    if not removed and require_todo and not already:
+        raise SystemExit(
+            f"ERROR: archive — TODO.md:1 no open bullet found for slug {slug!r}; "
+            "same-PR close requires removing the TODO item"
+        )
+    if not removed and already:
+        print(f"TODO.md already has no open bullet for {slug!r}")
 
-    _rewrite_links(slug, dest, dry_run=dry_run)
+    if not already:
+        _rewrite_links(slug, dest, dry_run=dry_run)
 
-    today = dt.date.today().isoformat()
-    pr_label = "PR pending" if pr <= 0 else f"PR #{pr}"
-    bullet = (
-        f"Archived plan `{slug}` → `docs/plans/{dest}/` "
-        f"({pr_label}, {today})"
-    )
-    if message:
-        bullet = f"{message.rstrip('.')} ({pr_label}, {today})"
-
-    if kind in ("maintenance", "both"):
-        _append_log(MAINTENANCE_PATH, bullet, dry_run=dry_run)
-    if kind in ("user", "both"):
-        _append_log(CHANGELOG_PATH, bullet, dry_run=dry_run)
-
+    _ensure_log_bullet(slug, pr, kind, message, dry_run=dry_run)
     print(f"archived {slug} -> docs/plans/{dest}/{slug}.md")
     return 0
 

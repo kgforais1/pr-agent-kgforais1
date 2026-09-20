@@ -26,8 +26,9 @@ PLAN_LINK_RE = re.compile(
     r"docs/plans/active/([a-z0-9][a-z0-9-]*)\.md"
 )
 NO_PLAN_RE = re.compile(r"<!--\s*no-plan:\s*([a-z0-9-]+)\s*-->")
-CHECKED_RE = re.compile(r"^- \[x\]", re.MULTILINE)
-UNCHECKED_RE = re.compile(r"^- \[ \](.*)$")
+CHECKED_RE = re.compile(r"^- \[[xX]\]")
+UNCHECKED_RE = re.compile(r"^- \[ \]")
+CHECKBOX_START_RE = re.compile(r"^- \[[ xX]\]")
 HEADING_RE = re.compile(r"^(#{2,3})\s+(.+?)\s*$")
 REQUIRED_PLAN_HEADINGS = (
     "## Purpose",
@@ -38,6 +39,27 @@ REQUIRED_PLAN_HEADINGS = (
     "## Validation",
 )
 PLAN_TRIGGER_WORDS = ("decide", "audit", "codify", "refactor")
+PLAN_TRIGGER_RE = re.compile(
+    r"\b(" + "|".join(PLAN_TRIGGER_WORDS) + r")\b",
+    re.IGNORECASE,
+)
+SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def is_checked_item(line: str) -> bool:
+    return bool(CHECKED_RE.match(line))
+
+
+def is_unchecked_item(line: str) -> bool:
+    return bool(UNCHECKED_RE.match(line))
+
+
+def is_checkbox_item(line: str) -> bool:
+    return bool(CHECKBOX_START_RE.match(line))
+
+
+def needs_plan_link(text: str) -> bool:
+    return bool(PLAN_TRIGGER_RE.search(text))
 
 
 def error(check: str, path: Path | str, line: int, reason: str) -> str:
@@ -86,12 +108,12 @@ def parse_todo_items(text: str) -> list[TodoItem]:
     items: list[TodoItem] = []
     i = 0
     while i < len(lines):
-        if UNCHECKED_RE.match(lines[i]) or lines[i].startswith("- [x]"):
+        if is_checkbox_item(lines[i]):
             start = i
             i += 1
             while i < len(lines):
                 line = lines[i]
-                if UNCHECKED_RE.match(line) or line.startswith("- [x]"):
+                if is_checkbox_item(line):
                     break
                 if HEADING_RE.match(line) and line.startswith("##"):
                     break

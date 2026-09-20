@@ -19,12 +19,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from harness_lib import (  # noqa: E402
     ACTIVE_DIR,
-    PLAN_TRIGGER_WORDS,
     REPO_ROOT,
     TODO_PATH,
     error,
+    is_checkbox_item,
+    is_checked_item,
     iter_plan_files,
     load_exempt_slugs,
+    needs_plan_link,
     parse_todo_items,
 )
 
@@ -54,7 +56,7 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
                 break
 
     for i, line in enumerate(lines, 1):
-        if line.startswith("- [x]"):
+        if is_checked_item(line):
             errors.append(error("todo", TODO_PATH, i, "checked items not allowed; remove on ship"))
 
     # Scratch notes must not contain checkboxes
@@ -67,7 +69,7 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
         for j in range(scratch_start + 1, len(lines)):
             if lines[j].startswith("## "):
                 break
-            if lines[j].startswith("- [ ") or lines[j].startswith("- [x]"):
+            if is_checkbox_item(lines[j]):
                 errors.append(
                     error("todo", TODO_PATH, j + 1, "Scratch notes must not contain checklist items")
                 )
@@ -77,7 +79,7 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
     linked_slugs: set[str] = set()
 
     for item in items:
-        if item.first_line.startswith("- [x]"):
+        if is_checked_item(item.first_line):
             continue
         for slug in item.plan_slugs:
             linked_slugs.add(slug)
@@ -92,12 +94,8 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
                     )
                 )
 
-        lowered = item.text.lower()
-        needs_plan = any(word in lowered for word in PLAN_TRIGGER_WORDS)
-        if needs_plan and not item.plan_slugs:
-            if item.no_plan_reason or any(
-                s in item.text for s in exempt_slugs
-            ):
+        if needs_plan_link(item.text) and not item.plan_slugs:
+            if item.no_plan_reason or any(s in item.text for s in exempt_slugs):
                 pass
             else:
                 # Also allow exempt file match on bold slug-ish title
