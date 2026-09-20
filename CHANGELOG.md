@@ -12,7 +12,7 @@ See [docs/process/semver.md](docs/process/semver.md).
 
 ### Changed
 
-- README, MkDocs, contributor/security docs, and `pyproject.toml` `[project.urls]` now describe `kgforais1/pr-agent-kgforais1` as a detached fork; upstream docs host, Qodo promo, and GTM removed from this tree. Source-file links in MkDocs point at fork blob/tree URLs so they work on the built site (`docs-readme-audit`; PR pending, 2026-09-20).
+- README, MkDocs, contributor/security docs, and `pyproject.toml` `[project.urls]` now describe `kgforais1/pr-agent-kgforais1` as a detached fork; upstream docs host, Qodo promo, and GTM removed from this tree. Source-file links in MkDocs point at fork blob/tree URLs so they work on the built site (`docs-readme-audit`; PR #10, 2026-09-20).
 
 ### Added
 

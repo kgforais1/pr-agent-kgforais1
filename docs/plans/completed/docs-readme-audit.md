@@ -1,6 +1,6 @@
 # Docs and README standalone audit
 
-**Status:** active
+**Status:** completed
 **TODO:** [Docs/README audit](../../../TODO.md#fork-cleanup-pass)
 **Created:** 2026-09-20
 
@@ -57,11 +57,7 @@ implements on `docs/readme-audit`.
 
 ## Outcomes & retrospective
 
-Fork-first README, MkDocs, and policy files now describe `kgforais1/pr-agent-kgforais1`.
-Qodo promo, GTM, and `docs.pr-agent.ai` CNAME are gone. Docker/Action/PyPI examples
-stay as labeled upstream artifacts. Muse review caught MkDocs `docs_dir` escapes;
-those source links now use fork blob/tree URLs. Packaging namespace remains a
-separate TODO.
+Docs/README identity rewrite for the detached fork This archive closes the plan on the same PR as the implementing work, per repo harness same-PR close rules.
 
 ## Context and Orientation
 
