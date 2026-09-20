@@ -33,6 +33,7 @@ repos:
       - id: actionlint
 
   # ruff handles linting and import sorting (config in pyproject.toml).
+  # Repo harness checks (stdlib scripts; python3 direct — no uv cold-start).
   - repo: local
     hooks:
       - id: ruff-check
@@ -41,3 +42,15 @@ repos:
         language: system
         types_or: [python, pyi]
         args: [--fix, --show-fixes]
+      - id: check-todo
+        name: check TODO.md harness
+        entry: python3 scripts/check_todo.py --strict-anchors
+        language: system
+        pass_filenames: false
+        files: ^(TODO\.md|docs/plans/.*|docs/process/todo-.*)$
+      - id: check-plans
+        name: check ExecPlans harness
+        entry: python3 scripts/check_plans.py
+        language: system
+        pass_filenames: false
+        files: ^(docs/plans/.*|TODO\.md)$

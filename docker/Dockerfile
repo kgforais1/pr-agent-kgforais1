@@ -60,6 +60,7 @@ ENV LITELLM_LOCAL_MODEL_COST_MAP=True
 RUN uv sync --frozen --no-install-project
 COPY pr_agent pr_agent
 COPY tests tests
+COPY scripts scripts
 # Config the unit suite asserts against, copied file by file so an unrelated
 # workflow edit does not invalidate this layer.
 COPY .github/workflows/publish.yml .github/workflows/publish.yml

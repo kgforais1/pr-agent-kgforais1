@@ -1,0 +1,38 @@
+# Runs repo harness checks on every pull request (no path filter).
+# Scripts are stdlib-only. Tests need pytest from the committed lockfile.
+# `--only-dev --no-build` installs the `dev` group (wheels, including pytest)
+# without the project runtime tree (giteapy is sdist-only, so a full
+# `uv sync --no-build` fails). Satisfies AGENTS.md lockfile install and
+# Sonar S8541/S8544.
+name: repo-harness
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repo-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
+
+      - name: Install harness test deps from uv.lock
+        run: uv sync --locked --only-dev --no-build
+
+      - name: Check TODO.md
+        run: python3 scripts/check_todo.py --strict-anchors
+
+      - name: Check plans
+        run: python3 scripts/check_plans.py
+
+      - name: Unit tests for harness scripts
+        run: PYTHONPATH=. uv run --no-sync --no-build pytest -q tests/unittest/test_check_todo.py tests/unittest/test_check_plans.py
