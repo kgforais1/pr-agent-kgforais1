@@ -17,4 +17,4 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
   replacement links (excluding images), allowlisted `no-plan` reasons,
   `../../../TODO.md` plan links, and `repo-harness` CI via
   `uv sync --locked --only-dev --no-build` (pytest from the lockfile without
-  sdist setup scripts).
+  sdist setup scripts), and `permissions: contents: read` on `repo-harness.yml`.
