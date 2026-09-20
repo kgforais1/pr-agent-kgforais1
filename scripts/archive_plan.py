@@ -9,6 +9,7 @@ Requirements: Python 3.12+ stdlib only. Prefer running from repo root.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import datetime as dt
 import os
 import re
@@ -206,10 +207,9 @@ def _write_repo_log(basename: str, content: str) -> None:
             handle.write(content)
         os.replace(tmp_name, os.fspath(dest))
     except Exception:
-        try:
+        # Best-effort cleanup if write/replace failed; ignore missing temp file.
+        with contextlib.suppress(OSError):
             os.unlink(tmp_name)
-        except OSError:
-            pass
         raise
 
 
