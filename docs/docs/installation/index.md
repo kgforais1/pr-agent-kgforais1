@@ -58,8 +58,8 @@ Completed children are joined without waiting and closed each iteration;
 live children are not terminated on cancellation. This is not a durable queue,
 a model-call deadline, or a host-wide memory limit.
 
-!!! note "Docker Hub namespace migration"
-    Releases **`0.34.2` and later** are published under [`pragent/pr-agent`](https://hub.docker.com/r/pragent/pr-agent). Older releases (up to and including `v0.31`) remain at the legacy [`codiumai/pr-agent`](https://hub.docker.com/r/codiumai/pr-agent) namespace as a frozen archive — no new images are pushed there. The examples on this site reference the new namespace; if you are pinning to a release before `0.34.2`, swap `pragent/pr-agent` for `codiumai/pr-agent` in your `image:` / `docker pull` / `uses: docker://` references.
+!!! note "Docker Hub namespace migration (upstream publishing history)"
+    Releases **`0.34.2` and later** are published under [`pragent/pr-agent`](https://hub.docker.com/r/pragent/pr-agent) by **upstream**. Older releases (up to and including `v0.31`) remain at the legacy [`codiumai/pr-agent`](https://hub.docker.com/r/codiumai/pr-agent) namespace as a frozen archive — no new images are pushed there. The examples on this site reference the new namespace; if you are pinning to a release before `0.34.2`, swap `pragent/pr-agent` for `codiumai/pr-agent` in your `image:` / `docker pull` / `uses: docker://` references. **This fork has not decided to publish its own Docker images** — treat these tags as upstream-built artifacts unless you build from this repository.
 
 !!! note "Immutable releases and version tags"
     **What you pin is what you get.** Version-numbered artifacts can never change after publication:

@@ -18,7 +18,7 @@
         - Highlight potential bugs or oversights
         - Enhance code quality and promote best practices
 
-    Read more about this issue in our [blog](https://www.qodo.ai/blog/understanding-the-challenges-and-pain-points-of-the-pull-request-cycle/)
+    Read more about PR review workflows in the [Understanding the Challenges and Pain Points of the Pull Request Cycle](https://www.qodo.ai/blog/understanding-the-challenges-and-pain-points-of-the-pull-request-cycle/) article (external, historical).
 
 ___
 

@@ -1,52 +1,14 @@
+# PR-Agent (kgforais1 fork)
 
+PR-Agent is an open-source, AI-powered code review agent for pull requests across GitHub, GitLab, Bitbucket, Azure DevOps, Gitea, and local checkouts.
 
-<br />
+## About this repository
 
-<div align="center">
+This tree is [`kgforais1/pr-agent-kgforais1`](https://github.com/kgforais1/pr-agent-kgforais1), a standalone checkout of PR-Agent maintained independently of upstream. Documentation, contributing paths, and security reporting on this repo describe **this fork**, not The-PR-Agent/pr-agent.
 
+## Lineage & upstream
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://codium.ai/images/pr_agent/logo-dark.png" width="330">
-  <source media="(prefers-color-scheme: light)" srcset="https://codium.ai/images/pr_agent/logo-light.png" width="330">
-  <img src="https://codium.ai/images/pr_agent/logo-light.png" alt="logo" width="330">
-
-</picture>
-<br>
-The Original Open-Source PR Reviewer
-<br><br>
-<a href="https://github.com/the-pr-agent/pr-agent/commits/main">
-<img alt="GitHub" src="https://img.shields.io/github/last-commit/the-pr-agent/pr-agent/main?style=for-the-badge" height="20">
-</a>
-</div>
-
----
-
- This repository contains the open-source PR Agent Project.
- It is not the Qodo offering for open-source projects.
-
-PR-Agent is an open-source, AI-powered code review agent and a community-maintained legacy project of Qodo. It is distinct from Qodo's primary AI code review offering, which provides a feature-rich, context-aware experience. Qodo offers a free version for open-source projects and integrates seamlessly with GitHub, GitLab, Bitbucket, and Azure DevOps for high-quality automated reviews.
-
-
-> This is a detached fork of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent). PRs upstream are intentionally not opened from this repo; see the `upstream-sync` tracking issue for upstream changes.
-
-## Sponsors
-
-PR-Agent is a community-maintained open-source project, with its ongoing development supported by our sponsors. If you'd like to support the project, consider [becoming a sponsor](https://github.com/sponsors/naorpeled).
-
-<p align="center">
-  <h3 align="center">🥇 Gold Sponsor</h3>
-</p>
-
-<p align="center">
-  <a target="_blank" href="https://www.qodo.ai/">
-    <img alt="Qodo — Gold sponsor" src="https://www.qodo.ai/wp-content/uploads/2025/03/qodo-logo.svg" width="300">
-  </a>
-</p>
-
-<p align="center">
-  <a target="_blank" href="https://www.qodo.ai/solutions/open-source/">Free version of Qodo for open-source projects</a>
-</p>
-
+This repository is a **detached fork** of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) (detached 2026-09-19). Pull requests are **not** opened upstream from this repo. A scheduled `upstream-sync` workflow tracks upstream changes; see repository issues and [AGENTS.md](./AGENTS.md) for fork safety rules.
 
 ## Table of Contents
 
@@ -55,17 +17,22 @@ PR-Agent is a community-maintained open-source project, with its ongoing develop
 - [Features](#features)
 - [See It in Action](#see-it-in-action)
 - [How It Works](#how-it-works)
+- [Documentation](#documentation)
 - [Data Privacy](#data-privacy)
 - [Contributing](#contributing)
+- [Security](#security)
 
 ## Getting Started
 
 > [!NOTE]
-> **Docker Hub namespace migration.** Releases `0.34.2` and later are published under [`pragent/pr-agent`](https://hub.docker.com/r/pragent/pr-agent). Older releases (up to and including `v0.31`) remain available at the legacy [`codiumai/pr-agent`](https://hub.docker.com/r/codiumai/pr-agent) namespace as a frozen archive — no new images are pushed there. Update any pinned `image:` / `docker pull` / `uses: docker://` references when upgrading to `0.34.2+`.
+> **Upstream-published Docker images and GitHub Action.** Examples below reference Docker Hub (`pragent/pr-agent`, legacy `codiumai/pr-agent`) and `uses: the-pr-agent/pr-agent@main`. Those artifacts are published by **upstream**, not by this fork. This fork has not decided to publish its own images, Action, or PyPI package (see the packaging audit in [TODO.md](./TODO.md)). Build from this repository or pin upstream artifacts deliberately.
 
-### 🚀 Quick Start for PR-Agent
+> [!NOTE]
+> **Docker Hub namespace migration (upstream publishing history).** Releases `0.34.2` and later are published under [`pragent/pr-agent`](https://hub.docker.com/r/pragent/pr-agent). Older releases (up to and including `v0.31`) remain available at the legacy [`codiumai/pr-agent`](https://hub.docker.com/r/codiumai/pr-agent) namespace as a frozen archive — no new images are pushed there. Update any pinned `image:` / `docker pull` / `uses: docker://` references when upgrading to `0.34.2+`.
 
-#### 1. GitHub Action (Recommended)
+### Quick Start
+
+#### 1. GitHub Action (upstream-published artifact)
 
 Add automated PR reviews to your repository with a simple workflow file:
 
@@ -85,46 +52,45 @@ jobs:
         OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-[Full GitHub Action setup guide](https://docs.pr-agent.ai/installation/github/#run-as-a-github-action)
+
+[Full GitHub Action setup guide](docs/docs/installation/github.md#run-as-a-github-action)
 
 #### 2. CLI Usage (Local Development)
 
-Run PR-Agent locally on your repository:
+Run PR-Agent locally. `pip install pr-agent` installs the **upstream** PyPI package (this fork has not published its own); prefer `uv sync` from this repository for a source checkout.
 
 ```bash
 pip install pr-agent
 export OPENAI_KEY=your_key_here
 pr-agent --pr_url https://github.com/owner/repo/pull/123 review
 ```
-[Complete CLI setup guide](https://docs.pr-agent.ai/usage-guide/automations_and_usage/#local-repo-cli)
+
+[Complete CLI setup guide](docs/docs/usage-guide/automations_and_usage.md#local-repo-cli)
 
 #### 3. Other Platforms
 
-- [GitLab webhook setup](https://docs.pr-agent.ai/installation/gitlab/)
-- [BitBucket app installation](https://docs.pr-agent.ai/installation/bitbucket/)
-- [Azure DevOps setup](https://docs.pr-agent.ai/installation/azure/)
-
-## News and Updates
-
-Full notes for every release are on the [Releases page](https://github.com/the-pr-agent/pr-agent/releases).
-
+- [GitLab webhook setup](docs/docs/installation/gitlab.md)
+- [BitBucket app installation](docs/docs/installation/bitbucket.md)
+- [Azure DevOps setup](docs/docs/installation/azure.md)
 
 ## Why Use PR-Agent?
 
-### 🎯 Built for Real Development Teams
+### Built for Real Development Teams
 
 **Fast & Affordable**: Each tool (`/review`, `/improve`, `/ask`) uses a single LLM call (~30 seconds, low cost)
 
-**Handles Any PR Size**: Our [PR Compression strategy](https://docs.pr-agent.ai/core-abilities/#pr-compression-strategy) effectively processes both small and large PRs
+**Handles Any PR Size**: Our [PR Compression strategy](docs/docs/core-abilities/compression_strategy.md) effectively processes both small and large PRs
 
 **Highly Customizable**: JSON-based prompting allows easy customization of review categories and behavior via [configuration files](pr_agent/settings/configuration.toml)
 
 **Platform Agnostic**:
+
 - **Git Providers**: GitHub, GitLab, BitBucket, Azure DevOps, Gitea
 - **Deployment**: CLI, GitHub Actions, Docker, self-hosted, webhooks
-- **AI Models**: OpenAI GPT, Anthropic Claude, Google Gemini, DeepSeek, Mistral, and any other model reachable through LiteLLM (Azure OpenAI, AWS Bedrock, Vertex AI, Databricks, OpenRouter, Ollama, and more) — see [Changing a model](https://docs.pr-agent.ai/usage-guide/changing_a_model/)
+- **AI Models**: OpenAI GPT, Anthropic Claude, Google Gemini, DeepSeek, Mistral, and any other model reachable through LiteLLM (Azure OpenAI, AWS Bedrock, Vertex AI, Databricks, OpenRouter, Ollama, and more) — see [Changing a model](docs/docs/usage-guide/changing_a_model.md)
 
 **Open Source Benefits**:
+
 - Full control over your data and infrastructure
 - Customize prompts and behavior for your team's needs
 - No vendor lock-in
@@ -132,41 +98,37 @@ Full notes for every release are on the [Releases page](https://github.com/the-p
 
 ## Features
 
-<div style="text-align:left;">
+See the current [feature and git provider support matrix](docs/docs/index.md#features) in the PR-Agent documentation.
 
-See the current [feature and git provider support matrix](https://docs.pr-agent.ai/#features) in the PR-Agent documentation.
-
-⚠️ `/help_docs` is temporarily disabled since `v0.36.1` pending a fix for a credential-exposure issue ([#2445](https://github.com/the-pr-agent/pr-agent/issues/2445)).
-
-[//]: # (- Support for additional git providers is described in [here]&#40;./docs/Full_environments.md&#41;)
-___
+⚠️ `/help_docs` is temporarily disabled since `v0.36.1` pending a fix for a credential-exposure issue ([#2445](https://github.com/The-PR-Agent/pr-agent/issues/2445) — upstream issue).
 
 ## See It in Action
 
-</div>
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/530">/describe</a></h4>
+Examples below link to **upstream demo PRs** on The-PR-Agent/pr-agent (they are not on this fork).
+
+<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/530">/describe</a> (upstream example)</h4>
 <div align="center">
 <p float="center">
-<img src="https://www.codium.ai/images/pr_agent/describe_new_short_main.png" width="512">
+<img src="docs/docs/assets/describe_new_short_main.webp" width="512" alt="/describe example">
 </p>
 </div>
 <hr>
 
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099151">/review</a></h4>
+<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099151">/review</a> (upstream example)</h4>
 <div align="center">
 <p float="center">
 <kbd>
-<img src="https://www.codium.ai/images/pr_agent/review_new_short_main.png" width="512">
+<img src="docs/docs/assets/review_new_short_main.png" width="512" alt="/review example">
 </kbd>
 </p>
 </div>
 <hr>
 
-<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099159">/improve</a></h4>
+<h4><a href="https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099159">/improve</a> (upstream example)</h4>
 <div align="center">
 <p float="center">
 <kbd>
-<img src="https://www.codium.ai/images/pr_agent/improve_new_short_main.png" width="512">
+<img src="docs/docs/assets/improve_new_short_main.webp" width="512" alt="/improve example">
 </kbd>
 </p>
 </div>
@@ -188,15 +150,26 @@ PR-Agent tools run as a comment on a PR or from the CLI. A few common ones:
 pr-agent --pr_url <PR_URL> review
 ```
 
-See the [Tools docs](https://docs.pr-agent.ai/tools/#usage-examples) for the full list of tools with example commands, and each tool's page for screenshots and options.
+See the [Tools docs](docs/docs/tools/index.md#usage-examples) for the full list of tools with example commands, and each tool's page for screenshots and options.
 
 <hr>
 
 ## How It Works
 
-The following diagram illustrates PR-Agent tools and their flow:
+The following diagram illustrates PR-Agent tools and their flow (asset from this repository's docs):
 
-![PR-Agent Tools](https://www.qodo.ai/images/pr_agent/diagram-v0.9.png)
+![PR-Agent Tools](docs/docs/assets/diagram-v0.9.webp)
+
+## Documentation
+
+User-facing documentation lives in this repository under [`docs/`](docs/README.md). Preview locally from the repo root:
+
+```bash
+pip install mkdocs-material mkdocs-glightbox
+mkdocs serve -f docs/mkdocs.yml
+```
+
+Start at [docs/docs/index.md](docs/docs/index.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) and [SECURITY.md](./SECURITY.md) for contributor and security policy on **this fork**.
 
 ## Data Privacy
 
@@ -207,25 +180,10 @@ https://openai.com/enterprise-privacy
 
 ## Contributing
 
-To contribute to the project, get started by reading our [Contributing Guide](https://github.com/the-pr-agent/pr-agent/blob/main/CONTRIBUTING.md).
+To contribute to **this fork**, read [CONTRIBUTING.md](./CONTRIBUTING.md). Pull requests target `kgforais1/pr-agent-kgforais1` only — do not open PRs against The-PR-Agent/pr-agent from this repository.
 
 For local verification, run `PYTHONPATH=. uv run pytest` from the repository root; it discovers the unit-test suite under `tests/unittest` by default. End-to-end tests under `tests/e2e_tests` require provider credentials and should be invoked explicitly, for example `PYTHONPATH=. uv run pytest tests/e2e_tests/test_github_app.py`.
 
+## Security
 
-## Big News for PR-Agent
-
-PR-Agent has a new home!
-
-After years of building this tool alongside the community, Qodo has donated PR-Agent to the open-source community - and we couldn't be more excited about what comes next.
-
-The project now lives in the PR-Agent org on GitHub, is fully community-owned, and is open for contributions and additional maintainers.
-
-What else changed:
-- Docs moved to - [docs.pr-agent.ai](https://docs.pr-agent.ai/)
-- Qodo Merge (Qodo 1.0), the hosted URL, which was the enterprise version of PR-Agent, has been rebranded and evolved into Qodo (Qodo 2.0), a full AI code review platform.
-
-## ❤️ Community
-
-This open-source release remains here as a community contribution from Qodo — the origin of modern AI-powered code collaboration. We’re proud to share it and inspire developers worldwide.
-
-The project now has its first external maintainer, Naor ([@naorpeled](https://github.com/naorpeled)), and is currently in the process of being donated to an open-source foundation.
+Report vulnerabilities privately through [this fork's GitHub security advisories](https://github.com/kgforais1/pr-agent-kgforais1/security/advisories/new). See [SECURITY.md](./SECURITY.md) for the full policy.

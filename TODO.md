@@ -22,10 +22,10 @@ remove it here and log the outcome in `CHANGELOG.md` (user-facing) and/or
 
 ### Fork cleanup pass
 
-- [ ] **Docs/README audit** <!-- no-plan: pending-execplan --> — review README and
-      docs/ for upstream-centric claims, badges, links, sponsor sections, and
-      "forked from" references; rewrite for a standalone repo. (README already has
-      the detached-fork note.)
+- [ ] **Docs/README audit** — review README and docs/ for upstream-centric claims,
+      badges, links, sponsor sections, and "forked from" references; rewrite for a
+      standalone repo. (README already has the detached-fork note.)
+      **Plan:** [docs/plans/active/docs-readme-audit.md](docs/plans/active/docs-readme-audit.md)
 - [ ] **Packaging/publishing audit** <!-- no-plan: pending-execplan --> — inventory
       what assumes upstream's namespaces: `publish.yml` (PyPI + 12 Docker targets),
       `pyproject.toml` package name, hardcoded `pragent/pr-agent` Docker Hub refs,

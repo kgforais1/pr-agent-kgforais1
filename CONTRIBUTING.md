@@ -1,6 +1,6 @@
 # Contributing to PR-Agent
 
-Thank you for your interest in contributing to the PR-Agent project!
+Thank you for your interest in contributing to the PR-Agent project in **this fork** (`kgforais1/pr-agent-kgforais1`).
 
 ## Getting Started
 
@@ -24,7 +24,7 @@ Thank you for your interest in contributing to the PR-Agent project!
    uv run pre-commit run --files <changed files>
    ```
 9. Commit your changes using conventional commit messages.
-10. Push to your fork and submit a pull request
+10. Push to your fork and submit a pull request **against `kgforais1/pr-agent-kgforais1` only**. Do not open pull requests against [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) from this repository.
 
 ## Development Guidelines
 
@@ -43,6 +43,6 @@ Thank you for your interest in contributing to the PR-Agent project!
 
 ## Questions or Need Help?
 
-- Ask questions or start a discussion in [GitHub Discussions](https://github.com/the-pr-agent/pr-agent/discussions)
-- Check the [documentation](https://docs.pr-agent.ai/) for detailed information
-- Report bugs or request features through [GitHub Issues](https://github.com/the-pr-agent/pr-agent/issues)
+- Ask questions or start a discussion in [GitHub Discussions](https://github.com/kgforais1/pr-agent-kgforais1/discussions)
+- Check the [documentation](docs/README.md) in this repository (`mkdocs serve -f docs/mkdocs.yml` to preview)
+- Report bugs or request features through [GitHub Issues](https://github.com/kgforais1/pr-agent-kgforais1/issues)

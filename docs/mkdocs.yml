@@ -1,6 +1,6 @@
 site_name: PR-Agent
-repo_url: https://github.com/the-pr-agent/pr-agent
-repo_name: the-pr-agent/pr-agent
+repo_url: https://github.com/kgforais1/pr-agent-kgforais1
+repo_name: kgforais1/pr-agent-kgforais1
 
 nav:
   - Overview:
@@ -104,7 +104,7 @@ extra:
   generator: false
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/the-pr-agent/pr-agent
+      link: https://github.com/kgforais1/pr-agent-kgforais1
 
 extra_css:
   - css/custom.css

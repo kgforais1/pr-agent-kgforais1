@@ -1,13 +1,13 @@
 # Configuration Reference
 
 > This page is **auto-generated** and should not be edited by hand.
-> Regenerate it from the [TOML source](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) with:
+> Regenerate it from the [TOML source](../../../pr_agent/settings/configuration.toml) with:
 >
 > ```bash
 > python scripts/generate_config_reference.py
 > ```
 
-Every configuration option PR-Agent supports, grouped by section. The [configuration.toml](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml)
+Every configuration option PR-Agent supports, grouped by section. The [configuration.toml](../../../pr_agent/settings/configuration.toml)
 file is the single source of truth for defaults and inline comments; this page renders the same
 list for easy searching and linking.
 
@@ -295,7 +295,7 @@ to-do list.
 
 ## `[pr_config]` — /config
 
-_This section only documents commented-out examples; see the [TOML source](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) for details._
+_This section only documents commented-out examples; see the [TOML source](../../../pr_agent/settings/configuration.toml) for details._
 
 ## `[pr_help_docs]`
 
@@ -327,7 +327,7 @@ _This section only documents commented-out examples; see the [TOML source](https
 
 ## `[github_action_config]`
 
-_This section only documents commented-out examples; see the [TOML source](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) for details._
+_This section only documents commented-out examples; see the [TOML source](../../../pr_agent/settings/configuration.toml) for details._
 
 ## `[github_app]`
 
@@ -389,7 +389,7 @@ _This section only documents commented-out examples; see the [TOML source](https
 
 ## `[local]`
 
-_This section only documents commented-out examples; see the [TOML source](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) for details._
+_This section only documents commented-out examples; see the [TOML source](../../../pr_agent/settings/configuration.toml) for details._
 
 ## `[gerrit]`
 
@@ -492,7 +492,7 @@ _This section only documents commented-out examples; see the [TOML source](https
 
 ## `[qdrant]`
 
-_This section only documents commented-out examples; see the [TOML source](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) for details._
+_This section only documents commented-out examples; see the [TOML source](../../../pr_agent/settings/configuration.toml) for details._
 
 ## `[skills]`
 

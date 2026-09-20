@@ -10,6 +10,10 @@ See [docs/process/semver.md](docs/process/semver.md).
 
 ## [Unreleased]
 
+### Changed
+
+- README, MkDocs, contributor/security docs, and `pyproject.toml` `[project.urls]` now describe `kgforais1/pr-agent-kgforais1` as a detached fork; upstream docs host, Qodo promo, and GTM removed from this tree.
+
 ### Added
 
 - (none yet — harness scaffolding is logged in MAINTENANCE.md)

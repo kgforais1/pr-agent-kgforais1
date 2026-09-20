@@ -36,6 +36,6 @@ Both accept the same tool arguments and [configuration overrides](../usage-guide
 | [Help](./help.md)                        | `/help`                          | `python -m pr_agent.cli --pr_url=<PR_URL> help`                |
 | [Update Changelog](./update_changelog.md)| `/update_changelog`              | `python -m pr_agent.cli --pr_url=<PR_URL> update_changelog`    |
 
-`/help_docs` is temporarily disabled (see [#2445](https://github.com/The-PR-Agent/pr-agent/issues/2445)) and is therefore omitted from the table above.
+`/help_docs` is temporarily disabled (see [#2445](https://github.com/The-PR-Agent/pr-agent/issues/2445) — upstream issue) and is therefore omitted from the table above.
 
 For screenshots, arguments, and a walkthrough of a typical use case, see the **Example usage** section on each tool's page linked above.
