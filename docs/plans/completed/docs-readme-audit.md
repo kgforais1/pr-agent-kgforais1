@@ -23,7 +23,7 @@ namespace decisions (that is the separate packaging audit).
 - [x] Draft context and plan of work
 - [x] Implement
 - [x] Validate
-- [ ] Archive on same PR (`scripts/archive_plan.py`)
+- [x] Archive on same PR (`scripts/archive_plan.py`)
 
 Research: `tmp/docs-readme-audit-research.md` (gitignored). Strategy: Option 2
 (fork-first landing, upstream as lineage). Locked decisions below; Composer
