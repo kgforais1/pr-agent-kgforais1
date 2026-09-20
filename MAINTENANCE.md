@@ -15,4 +15,6 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
 - SonarCloud / CodeRabbit / Greptile hardening for PR #9: slug path validation,
   heading regex, archive preflight, slug-tagged log bullets, resolved Markdown
   replacement links (excluding images), allowlisted `no-plan` reasons,
-  `../../../TODO.md` plan links, and `repo-harness` CI via `uv sync --locked`.
+  `../../../TODO.md` plan links, and `repo-harness` CI via
+  `uv sync --locked --only-dev --no-build` (pytest from the lockfile without
+  sdist setup scripts).
