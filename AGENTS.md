@@ -103,7 +103,7 @@ Ruff is the single linting tool: `pyproject.toml` configures it and the pre-comm
 ## Safety and Permissions
 
 - This repository is `kgforais1/pr-agent-kgforais1`, a standalone repo detached from `The-PR-Agent/pr-agent`.
-- **Never create a pull request with a base outside `kgforais1/pr-agent-kgforais1`.** Never pass `--repo`/`-R` pointing at `The-PR-Agent/*`, and never target upstream's issues/PRs API.
+- **Never create a pull request with a base outside `kgforais1/pr-agent-kgforais1`.** Never pass `--repo`/`-R` pointing at `The-PR-Agent/*`, and never create, edit, or comment on upstream issues/PRs. The sole sanctioned upstream API access is the read-only search performed by the `upstream-pr-leak-check` workflow.
 - Before creating any PR, verify the base with `gh repo view --json nameWithOwner`.
 - Upstream sync is handled by the scheduled workflow; do not run ad-hoc merges from upstream without the owner asking.
 - If the owner ever explicitly asks for an upstream PR, require written confirmation first; note that it is technically impossible from this repo unless a new fork of upstream is created — flag that instead of doing it silently.
