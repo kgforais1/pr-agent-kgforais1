@@ -31,11 +31,18 @@ jobs:
           gh label create upstream-leak --description "Upstream PR leak detection" --color b60205 --force
           : > /tmp/leaks.txt
           for ACCOUNT in kgforais1 kgrizz-git; do
-            # -f lets gh form-encode the query; per_page=100 avoids silent
-            # pagination truncation (a real leak will never exceed 100).
-            RESPONSE=$(gh api search/issues -f q="repo:The-PR-Agent/pr-agent type:pr is:open author:${ACCOUNT}" -f per_page=100)
+            # -f fields make gh default to POST; search is a GET endpoint, so
+            # --method GET is required. per_page=100 avoids silent pagination
+            # truncation; a genuine leak is a handful of PRs, so >100 (or GitHub
+            # reporting incomplete results) fails loudly instead of reporting a
+            # partial list.
+            RESPONSE=$(gh api --method GET search/issues -f q="repo:The-PR-Agent/pr-agent type:pr is:open author:${ACCOUNT}" -f per_page=100)
             if [ "$(echo "$RESPONSE" | jq -r .incomplete_results)" = "true" ]; then
               echo "::error::Search incomplete for author=${ACCOUNT}; refusing to report on partial data."
+              exit 1
+            fi
+            if [ "$(echo "$RESPONSE" | jq -r .total_count)" -gt 100 ]; then
+              echo "::error::More than 100 upstream PRs by ${ACCOUNT}; expected near zero. Investigate manually."
               exit 1
             fi
             echo "$RESPONSE" | jq -r '.items[] | "- #\(.number): \(.title) (\(.html_url)) — author: \(.user.login)"' >> /tmp/leaks.txt
