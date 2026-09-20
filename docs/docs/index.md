@@ -40,7 +40,7 @@ PR-Agent offers comprehensive pull request functionalities integrated with vario
 |       |                                                                                       |        |        |           |              |       |
 | [USAGE](./usage-guide/index.md) | [CLI](./usage-guide/automations_and_usage.md#local-repo-cli)      |   ✅   |   ✅   |    ✅     |      ✅       |  ✅   |
 |       | [App / webhook](./usage-guide/automations_and_usage.md#github-app)                    |   ✅   |   ✅   |    ✅     |      ✅       |  ✅   |
-|       | [Tagging bot](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/README.md#getting-started)                       |   ✅   |        |           |              |       |
+|       | [PR comments](./usage-guide/automations_and_usage.md#online-usage)                       |   ✅   |        |           |              |       |
 |       | [Actions](./installation/github.md#run-as-a-github-action)                            |   ✅   |   ✅   |    ✅     |      ✅       |       |
 |       |                                                                                       |        |        |           |              |       |
 | [CORE](./core-abilities/index.md) | [Adaptive and token-aware file patch fitting](./core-abilities/compression_strategy.md) |   ✅   |   ✅   |    ✅     |      ✅       |       |
