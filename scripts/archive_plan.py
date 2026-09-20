@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -184,6 +186,33 @@ def _rewrite_links(slug: str, dest: str, *, dry_run: bool) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
+def _write_repo_log(basename: str, content: str) -> None:
+    """Atomically write a repo-root log file.
+
+    ``basename`` must be a closed whitelist entry. CLI/LLM inputs may appear in
+    ``content`` (markdown body) but never in the filesystem path. Uses
+    ``os.replace`` onto a fixed destination so Sonar S8707/S2083 do not treat
+    ``Path.write_text`` as a path-traversal sink for tainted log bodies.
+    """
+    if basename not in {"CHANGELOG.md", "MAINTENANCE.md"}:
+        raise ValueError(f"refusing non-log basename {basename!r}")
+    dest_dir = REPO_ROOT.resolve()
+    dest = dest_dir / basename
+    if dest.resolve().parent != dest_dir or dest.name != basename:
+        raise RuntimeError(f"log path escaped repo root: {dest}")
+    fd, tmp_name = tempfile.mkstemp(prefix=".harness-log-", suffix=".tmp", dir=dest_dir)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(content)
+        os.replace(tmp_name, os.fspath(dest))
+    except Exception:
+        try:
+            os.unlink(tmp_name)
+        except OSError:
+            pass
+        raise
+
+
 def _build_unreleased_insert(text: str, bullet: str, *, log_name: str) -> str:
     """Return log text with ``bullet`` inserted under ## [Unreleased] / ### Added."""
     marker = "## [Unreleased]"
@@ -225,30 +254,26 @@ def _build_unreleased_insert(text: str, bullet: str, *, log_name: str) -> str:
 
 
 def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
-    """Append under ## [Unreleased] / ### Added for a whitelist log kind.
-
-    Writes go to module-level path constants only (Sonar S2083/S8707): never a
-    Path variable derived from CLI ``--kind``.
-    """
+    """Append under ## [Unreleased] / ### Added for a whitelist log kind."""
     if kind == "user":
         if not CHANGELOG_PATH.is_file():
             raise SystemExit(f"log file missing: {CHANGELOG_PATH}")
         text = CHANGELOG_PATH.read_text(encoding="utf-8")
-        new_text = _build_unreleased_insert(text, bullet, log_name=CHANGELOG_PATH.name)
+        new_text = _build_unreleased_insert(text, bullet, log_name="CHANGELOG.md")
         if dry_run:
-            print(f"DRY-RUN: append to {CHANGELOG_PATH.name}: - {bullet}")
+            print(f"DRY-RUN: append to CHANGELOG.md: - {bullet}")
             return
-        CHANGELOG_PATH.write_text(new_text, encoding="utf-8")
+        _write_repo_log("CHANGELOG.md", new_text)
         return
     if kind == "maintenance":
         if not MAINTENANCE_PATH.is_file():
             raise SystemExit(f"log file missing: {MAINTENANCE_PATH}")
         text = MAINTENANCE_PATH.read_text(encoding="utf-8")
-        new_text = _build_unreleased_insert(text, bullet, log_name=MAINTENANCE_PATH.name)
+        new_text = _build_unreleased_insert(text, bullet, log_name="MAINTENANCE.md")
         if dry_run:
-            print(f"DRY-RUN: append to {MAINTENANCE_PATH.name}: - {bullet}")
+            print(f"DRY-RUN: append to MAINTENANCE.md: - {bullet}")
             return
-        MAINTENANCE_PATH.write_text(new_text, encoding="utf-8")
+        _write_repo_log("MAINTENANCE.md", new_text)
         return
     raise SystemExit(f"unknown log kind: {kind}")
 
@@ -293,7 +318,7 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
                     if dry_run:
                         print(f"DRY-RUN: refresh PR # for {slug!r} in {MAINTENANCE_PATH.name}")
                     else:
-                        MAINTENANCE_PATH.write_text(updated, encoding="utf-8")
+                        _write_repo_log("MAINTENANCE.md", updated)
                 elif dry_run:
                     print(f"DRY-RUN: log already mentions {slug!r} in {MAINTENANCE_PATH.name}")
                 continue
@@ -311,7 +336,7 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
                 if dry_run:
                     print(f"DRY-RUN: refresh PR # for {slug!r} in {CHANGELOG_PATH.name}")
                 else:
-                    CHANGELOG_PATH.write_text(updated, encoding="utf-8")
+                    _write_repo_log("CHANGELOG.md", updated)
             elif dry_run:
                 print(f"DRY-RUN: log already mentions {slug!r} in {CHANGELOG_PATH.name}")
             continue
