@@ -15,5 +15,6 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
 - SonarCloud hardening for PR #9: slug path validation (`validate_slug`/`plan_path`),
   heading regex without super-linear backtracking, harness CI without `uv` (pinned
   pytest wheels via `--only-binary=:all:`), shared harness fixtures in
-  `tests/unittest/conftest.py`, archive preflight/collision/log scoping, and exact
-  plan-heading / superseded-link checks.
+  `tests/unittest/conftest.py`, archive preflight/collision/log scoping, exact
+  plan-heading / superseded-link checks, log writes to path constants only, and
+  `COPY scripts` in the Docker `test` image so harness unit tests resolve.

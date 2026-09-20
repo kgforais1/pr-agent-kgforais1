@@ -184,24 +184,11 @@ def _rewrite_links(slug: str, dest: str, *, dry_run: bool) -> None:
             path.write_text(updated, encoding="utf-8")
 
 
-def _log_path_for_kind(kind: str) -> Path:
-    """Resolve log path from a closed set of kinds (never from a free-form path)."""
-    if kind == "user":
-        return CHANGELOG_PATH
-    if kind == "maintenance":
-        return MAINTENANCE_PATH
-    raise SystemExit(f"unknown log kind: {kind}")
-
-
-def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
-    """Append under ## [Unreleased] / ### Added for a whitelist log kind."""
-    path = _log_path_for_kind(kind)
-    if not path.is_file():
-        raise SystemExit(f"log file missing: {path}")
-    text = path.read_text(encoding="utf-8")
+def _build_unreleased_insert(text: str, bullet: str, *, log_name: str) -> str:
+    """Return log text with ``bullet`` inserted under ## [Unreleased] / ### Added."""
     marker = "## [Unreleased]"
     if marker not in text:
-        raise SystemExit(f"{path.name} missing {marker} section")
+        raise SystemExit(f"{log_name} missing {marker} section")
     lines = text.splitlines()
     out: list[str] = []
     i = 0
@@ -216,9 +203,13 @@ def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
             if j < len(lines) and lines[j].strip() == "### Added":
                 out.append(lines[j])
                 j += 1
-                # Drop recognized empty-state placeholders before first real bullet.
-                while j < len(lines) and NONE_YET_RE.match(lines[j].strip()):
-                    j += 1
+                # Drop blanks and empty-state placeholders so they are not re-emitted.
+                while j < len(lines):
+                    stripped = lines[j].strip()
+                    if stripped == "" or NONE_YET_RE.match(stripped):
+                        j += 1
+                        continue
+                    break
                 out.append(f"- {bullet}")
                 i = j - 1
                 inserted = True
@@ -229,12 +220,37 @@ def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
                 inserted = True
         i += 1
     if not inserted:
-        raise SystemExit(f"failed to insert into {path.name}")
-    new_text = "\n".join(out) + ("\n" if text.endswith("\n") else "")
-    if dry_run:
-        print(f"DRY-RUN: append to {path.name}: - {bullet}")
+        raise SystemExit(f"failed to insert into {log_name}")
+    return "\n".join(out) + ("\n" if text.endswith("\n") else "")
+
+
+def _append_log(kind: str, bullet: str, *, dry_run: bool) -> None:
+    """Append under ## [Unreleased] / ### Added for a whitelist log kind.
+
+    Writes go to module-level path constants only (Sonar S2083/S8707): never a
+    Path variable derived from CLI ``--kind``.
+    """
+    if kind == "user":
+        if not CHANGELOG_PATH.is_file():
+            raise SystemExit(f"log file missing: {CHANGELOG_PATH}")
+        text = CHANGELOG_PATH.read_text(encoding="utf-8")
+        new_text = _build_unreleased_insert(text, bullet, log_name=CHANGELOG_PATH.name)
+        if dry_run:
+            print(f"DRY-RUN: append to {CHANGELOG_PATH.name}: - {bullet}")
+            return
+        CHANGELOG_PATH.write_text(new_text, encoding="utf-8")
         return
-    path.write_text(new_text, encoding="utf-8")
+    if kind == "maintenance":
+        if not MAINTENANCE_PATH.is_file():
+            raise SystemExit(f"log file missing: {MAINTENANCE_PATH}")
+        text = MAINTENANCE_PATH.read_text(encoding="utf-8")
+        new_text = _build_unreleased_insert(text, bullet, log_name=MAINTENANCE_PATH.name)
+        if dry_run:
+            print(f"DRY-RUN: append to {MAINTENANCE_PATH.name}: - {bullet}")
+            return
+        MAINTENANCE_PATH.write_text(new_text, encoding="utf-8")
+        return
+    raise SystemExit(f"unknown log kind: {kind}")
 
 
 def _refresh_pr_pending_for_slug(text: str, slug: str, pr: int) -> str:
@@ -259,15 +275,33 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
     else:
         bullet = f"Archived plan `{slug}` → `docs/plans/` ({pr_label}, {today})"
 
-    kinds: list[str] = []
+    targets: list[str] = []
     if kind in ("maintenance", "both"):
-        kinds.append("maintenance")
+        targets.append("maintenance")
     if kind in ("user", "both"):
-        kinds.append("user")
+        targets.append("user")
 
-    for log_kind in kinds:
-        path = _log_path_for_kind(log_kind)
-        text = path.read_text(encoding="utf-8")
+    for log_kind in targets:
+        if log_kind == "maintenance":
+            text = MAINTENANCE_PATH.read_text(encoding="utf-8")
+            mentions = f"`{slug}`" in text or f"/{slug}" in text
+            if message and message[:48] in text:
+                mentions = True
+            if mentions:
+                updated = _refresh_pr_pending_for_slug(text, slug, pr)
+                if updated != text:
+                    if dry_run:
+                        print(f"DRY-RUN: refresh PR # for {slug!r} in {MAINTENANCE_PATH.name}")
+                    else:
+                        MAINTENANCE_PATH.write_text(updated, encoding="utf-8")
+                elif dry_run:
+                    print(f"DRY-RUN: log already mentions {slug!r} in {MAINTENANCE_PATH.name}")
+                continue
+            _append_log("maintenance", bullet, dry_run=dry_run)
+            continue
+
+        # log_kind == "user"
+        text = CHANGELOG_PATH.read_text(encoding="utf-8")
         mentions = f"`{slug}`" in text or f"/{slug}" in text
         if message and message[:48] in text:
             mentions = True
@@ -275,13 +309,13 @@ def _ensure_log_bullet(slug: str, pr: int, kind: str, message: str | None, *, dr
             updated = _refresh_pr_pending_for_slug(text, slug, pr)
             if updated != text:
                 if dry_run:
-                    print(f"DRY-RUN: refresh PR # for {slug!r} in {path.name}")
+                    print(f"DRY-RUN: refresh PR # for {slug!r} in {CHANGELOG_PATH.name}")
                 else:
-                    path.write_text(updated, encoding="utf-8")
+                    CHANGELOG_PATH.write_text(updated, encoding="utf-8")
             elif dry_run:
-                print(f"DRY-RUN: log already mentions {slug!r} in {path.name}")
+                print(f"DRY-RUN: log already mentions {slug!r} in {CHANGELOG_PATH.name}")
             continue
-        _append_log(log_kind, bullet, dry_run=dry_run)
+        _append_log("user", bullet, dry_run=dry_run)
 
 
 def archive(
