@@ -40,13 +40,17 @@ Tracked work for the `kgforais1/pr-agent-kgforais1` repo (standalone, detached f
       (naming conventions, linting of the tracker, etc.). Aim: no plan or decision
       exists only in chat history.
 
-### Security
+## Done (2026-09-19/20)
 
-- [ ] **Dependabot findings** — 1 critical, 1 high, 1 moderate on the default branch
-      (see Security tab). Triage and fix or dismiss-with-reason.
-
-## Done (2026-09-19)
-
+- [x] **Dependabot cleared (PR #5)** — `uv.lock`-only bump `anyio 4.14.1 → 4.15.1`
+      resolved all 3 open alerts (1 critical TLS/IDNA, 1 high, 1 medium); verified
+      0 open alerts via API after merge.
+- [x] **PR #4 + PR #7 merged; both scheduled workflows smoke-tested live.**
+      Sync-check opened the rolling `upstream-sync` issue #3 with real upstream
+      commits. Leak-check caught (and fixed) two real bugs — missing checkout
+      context, and `user:` vs `author:` query semantics plus the `gh api -f`→POST
+      gotcha — and now runs clean with zero false positives (false-positive issue
+      #6 closed with explanation).
 - [x] PR #1 merged — `.githooks/` (pre-push blocks direct pushes to `main`;
       pre-commit shim bridging to the pre-commit framework) + AGENTS.md safety rules.
 - [x] Detached from fork network (UI, owner action) — PRs to upstream **from this
