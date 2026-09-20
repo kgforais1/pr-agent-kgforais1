@@ -13,7 +13,9 @@ the repository alone, following patterns inspired by
 [OpenAI harness engineering](https://openai.com/index/harness-engineering/) and
 [ExecPlans](https://developers.openai.com/cookbook/articles/codex_exec_plans).
 
-This plan designs the harness; a follow-up implementation PR delivers the scaffolding.
+This is a **design ExecPlan** — it specifies policy and file layout. The Phase A
+implementation PR adds the executable spec (Concrete Steps, expected transcripts, per-file
+edits) in its own Progress section and dogfoods `archive_plan.py --kind maintenance`.
 
 ## Problem
 
@@ -58,7 +60,9 @@ docs/
 │   ├── README.md           # index + lifecycle summary
 │   ├── PLANS.md            # ExecPlan template & authoring rules
 │   ├── active/             # in-flight ExecPlans
-│   └── completed/          # archived ExecPlans
+│   ├── completed/          # shipped (archived on implementing PR)
+│   ├── deferred/           # paused — may resume later
+│   └── superseded/         # replaced by another plan — do not resurrect
 ├── process/
 │   ├── todo-conventions.md # when to add/remove open TODO items
 │   ├── semver.md           # fork versioning vs upstream tags
@@ -67,6 +71,12 @@ CHANGELOG.md                # user-facing fork changes (semver releases)
 MAINTENANCE.md              # harness, CI, refactors, process (under the hood)
 TODO.md                     # open work only (no completed history)
 ```
+
+| Destination | When | Status line | Resume? |
+|-------------|------|-------------|---------|
+| `completed/` | Work shipped | `**Status:** completed` | No |
+| `deferred/` | Paused (blocked, owner hold, waiting on audit, etc.) | `**Status:** deferred` | Yes — move back to `active/` + re-add TODO |
+| `superseded/` | Replaced by a new plan/approach | `**Status:** superseded` | No — link replacement in Outcomes |
 
 `tmp/` remains for ephemeral analysis only. Promotion rule: if the outcome affects
 future agents or maintainers, move content into `docs/` or an ExecPlan before the PR
@@ -89,15 +99,24 @@ Add to `AGENTS.md` (pointer only):
 > When writing complex features or significant refactors, use an ExecPlan (as described
 > in `docs/plans/PLANS.md`) from design to implementation.
 
-Status line convention (all plans): `**Status:** active|completed` on line 3 (not YAML
-front-matter) so `check_plans.py` can lint mechanically.
+Status line convention: `**Status:** active|completed|deferred|superseded`
+(conventionally line 3; linter matches first `**Status:**` in the first 10 lines, not
+YAML front-matter).
+
+Required plan headings (exact casing for `check_plans.py`): `## Purpose`, `## Progress`,
+`## Decision log`, `## Surprises & discoveries`, `## Outcomes & retrospective`,
+`## Validation`.
+
+Pin canonical skeleton in `docs/plans/PLANS.md` at implementation time (verbatim from
+[Codex cookbook](https://developers.openai.com/cookbook/articles/codex_exec_plans), SHA
+noted in file header) — do not rely on live external fetch in `new_plan.py`.
 
 ### 3. TODO.md conventions
 
 **Open backlog only.** `TODO.md` lists work not yet shipped. It does not track
 completed items — no `## Done` section. History lives in `CHANGELOG.md` and/or
-`MAINTENANCE.md` (what shipped), `docs/plans/completed/` (how it was planned), and
-`git log`.
+`MAINTENANCE.md` (what shipped or why deferred/superseded), archived plans under
+`docs/plans/{completed,deferred,superseded}/`, and `git log`.
 
 Slug grammar: `kebab-case` (e.g. `plan-lifecycle-harness`). Pin exact formats in
 `docs/process/todo-conventions.md`.
@@ -112,34 +131,60 @@ Slug grammar: `kebab-case` (e.g. `plan-lifecycle-harness`). Pin exact formats in
 **Which log?** Use the table in §5. Mixed PRs may touch both. At least one log entry is
 required when closing a TODO item (unless the change is docs-only with zero repo impact).
 
-`scripts/check_todo.py` enforces: all items use `- [ ]` (unchecked only); every non-exempt
-`active/*.md` is back-linked from `TODO.md`; plan links resolve; items containing
-codify/audit/decide require a plan link. Reject any `## Done` section or `- [x]` items.
+`scripts/check_todo.py` enforces: all checklist items use `- [ ]` (unchecked only);
+every non-exempt `active/*.md` is back-linked from `TODO.md`; plan links resolve.
+Reject any `## Done` section or `- [x]` items. Allow `## Scratch notes` (prose only, no
+checkboxes).
+
+**Plan link required** when a TODO item contains `decide`, `audit`, `codify`, or
+`refactor` (multi-file), or spans multiple sessions/PRs.
+
+**Exempt from plan link** (pin in `docs/process/todo-conventions.md`):
+
+- Owner web-UI actions (no repo changes): suffix `<!-- no-plan: owner-web-ui -->` on the
+  bullet's first line, or match slug in `docs/process/todo-exempt.txt`
+- One-line typo fixes (§Non-goals)
+
+Violations print `ERROR: <check> — <file>:<line> <reason>` and exit 1.
 
 Section anchors: keep `### Repo process` under `## Open`; validate `#repo-process`
 with `check_todo.py --strict-anchors`.
 
 ### 4. Close-on-same-PR workflow (owner preference)
 
-When implementation PR merges (all in one PR; use `scripts/archive_plan.py`):
+Close an active plan on the **same PR** that ends the work (ship, pause, or replace).
+Use `scripts/archive_plan.py --dest completed|deferred|superseded` (default: `completed`):
 
-1. `git mv docs/plans/active/<slug>.md` → `docs/plans/completed/<slug>.md`
-2. Set `**Status:** completed`; fill **Outcomes & retrospective** (≥2 sentences)
-3. **Remove** the open TODO bullet (do not add a Done entry — `TODO.md` is open-only)
-4. Rewrite any in-repo links from `active/<slug>` → `completed/<slug>` (atomic with move)
+1. `git mv docs/plans/active/<slug>.md` → `docs/plans/<dest>/<slug>.md`
+2. Set `**Status:**` to match dest; fill **Outcomes & retrospective** (≥2 sentences).
+   For `deferred/`: state why paused and what unblocks resume. For `superseded/`: link
+   the replacement plan (required).
+3. **Remove** the open TODO block (multi-line bullets: parse from `- [ ]` until next
+   `- [ ]`, `###`, or `##`; match by `**slug**` or `active/<slug>.md` link)
+4. Rewrite links from `active/<slug>` → `<dest>/<slug>` in Markdown under `docs/`,
+   `README.md`, `AGENTS.md`, and `#` comments in `.github/workflows/*.yml` (code
+   docstrings deferred to Phase B). Use `rg -l 'active/<slug>'` then replace.
 5. Add entry to `CHANGELOG.md` and/or `MAINTENANCE.md` under `[Unreleased]` with PR #
-   and date (see §5 — user-facing vs under-the-hood)
-6. If `CHANGELOG.md` has release-worthy user-facing changes (post packaging audit):
-   bump `pyproject.toml` version and cut a `## [X.Y.Z]` section
+   and date (see §5). Deferred/superseded usually log `MAINTENANCE.md` only.
+6. If dest is `completed/` and `CHANGELOG.md` has release-worthy user-facing changes
+   (post packaging audit): bump `pyproject.toml` version and cut a `## [X.Y.Z]` section
 
 **Enforcement:** soft hint at commit time (`.githooks/commit-msg`, exit 0); hard gate in
 CI (`repo-harness.yml` on the PR). Never defer steps 1–5 to a follow-up PR.
 
 **Escape hatch:** only when a reviewer requests a split PR; the remainder keeps the
-plan in `active/` with a Progress entry naming the follow-up PR/issue. No silent deferrals.
+plan in `active/` with a Progress entry naming the follow-up PR/issue. No silent
+`deferred/` moves without Outcomes + MAINTENANCE entry.
+
+**Resume from deferred:** `git mv` back to `active/`, set `**Status:** active`, re-add
+TODO item with plan link, log resume in `MAINTENANCE.md` on the same PR.
 
 **Rollback:** if a branch is abandoned after archive, `git mv` back to `active/` and
-revert TODO/MAINTENANCE edits on that branch.
+revert TODO/log edits on that branch. Concurrent PRs closing different TODO items may
+conflict on `TODO.md` — rebase before merge.
+
+`archive_plan.py` is the single source of truth for steps 1–5; idempotent re-run on an
+already-archived slug exits 0 (no-op).
 
 ### 5. Changelog, maintenance log, and semver
 
@@ -152,6 +197,12 @@ sections (`Added`, `Changed`, `Fixed`, `Removed`, `Security`) under `[Unreleased
 | `MAINTENANCE.md` | Maintainers, agents, CI | Harness scaffolding, refactors, CI workflows, `AGENTS.md`/plan lifecycle, dependency-only bumps with no user impact |
 | `pyproject.toml` `version` | Package releases | Bumps when cutting a `CHANGELOG.md` release (gated on packaging audit) |
 | Git tags / Releases | Optional fork policy | Document in `docs/process/semver.md` |
+
+Replace the upstream "no longer updated per release" header (lines 1–9) with a fork
+notice pointing to `MAINTENANCE.md` for harness work; keep the 2023 Archive section
+above the new divider. Document fork tag policy (`release-drafter.yml` /
+`publish.yml` interaction) in `docs/process/semver.md` — interim: no tags until
+packaging audit.
 
 `CHANGELOG.md` structure after the existing upstream archive (pre-fork history stays
 untouched above a `---` divider):
@@ -195,6 +246,7 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
 |-------------|-----|
 | User-visible feature, fix, or breaking change | `CHANGELOG.md` |
 | Refactor, harness, CI, agent docs, internal tooling | `MAINTENANCE.md` |
+| Harness/CI/docs-only, no TODO close | `MAINTENANCE.md` only |
 | Both (e.g. feature + harness to ship it) | Both |
 
 `scripts/archive_plan.py --kind user|maintenance|both` selects target log(s); default
@@ -233,46 +285,54 @@ At session end (if work shipped or plan advanced):
 | Check | Where | What |
 |-------|-------|------|
 | TODO + plan links | `scripts/check_todo.py` + unit tests | Structure, anchors, bidirectional plan↔TODO links |
-| Plan lifecycle | `scripts/check_plans.py` + unit tests | No `**Status:** active` in `completed/`; required headings; Outcomes non-empty when completed |
+| Plan lifecycle | `scripts/check_plans.py` + unit tests | Status matches folder (`active`/`completed`/`deferred`/`superseded`); no `**Status:** active` outside `active/`; required headings; Outcomes non-empty (≥100 chars) in non-active folders; `superseded/` must link a replacement plan |
 | Markdown links | Phase B: `scripts/check_links.py` (stdlib) | `TODO.md` → plan paths exist; prefer no lychee dep in Phase A |
 | AGENTS.md size | Phase B CI warning | Flag if > 200 lines without process pointers near top |
 
-Run via `uv run --frozen python scripts/…` in CI; `PYTHONPATH=.` only if imports need it.
-Bootstrap: first implementing PR may use a one-time allowlist until `completed/` exists.
+Scripts are stdlib-only (no `pr_agent/` imports) so CI and pre-commit can use `python3
+scripts/…` directly. CI: `uv sync --frozen` then `python3 scripts/…` + pytest in
+`repo-harness.yml`. Pre-commit local hooks: `python3` only if each check runs <2s.
+
+Bootstrap: `check_plans.py --allow-empty-archives` for the birth PR that creates
+`completed/`, `deferred/`, `superseded/`; one-time allowlist until `PLANS.md` /
+`MAINTENANCE.md` exist.
 
 ### 8. Hooks and CI integration
 
 **Git hooks (`.githooks/`):**
 
 - Existing `pre-push` blocks direct `main` pushes (unchanged)
-- New `.githooks/commit-msg` (soft warn, **exit 0**): if commit touches
-  `docs/plans/active/` and `TODO.md` is not in the same commit, or no log file
-  (`CHANGELOG.md` / `MAINTENANCE.md`) is touched, print a hint about same-PR close.
-  Not a `pre-commit` framework hook.
+- New git-native `.githooks/commit-msg` (filename `commit-msg`, `chmod +x`; **not** a
+  `.pre-commit-config.yaml` entry): soft warn, **exit 0** always. If commit touches
+  `docs/plans/active/` without `TODO.md` in the same commit, hint to run
+  `scripts/archive_plan.py --dry-run`. One-line note in `AGENTS.md` hooks setup if needed.
 
 **CI (`.github/workflows/repo-harness.yml`):**
 
 ```yaml
-# Trigger: pull_request, paths filter TODO.md, docs/plans/**, CHANGELOG.md, MAINTENANCE.md, scripts/**
-# Jobs: uv sync --frozen → check_todo.py → check_plans.py
-# Fail PR if any check fails (hard gate for same-PR close invariants)
+# on: pull_request — NO paths filter (cheap scripts; must catch missing-plan violations)
+# Python version: match build-and-test.yml
+# Jobs: uv sync --frozen → python3 scripts/check_todo.py [--strict-anchors]
+#       → python3 scripts/check_plans.py → pytest test_check_*.py -q
+# Fail PR on any non-zero exit
 ```
 
-Add harness scripts to `.pre-commit-config.yaml` local hooks only if each runs <2s;
-otherwise rely on `repo-harness.yml` (avoid duplicating full checkout in two workflows).
+Do not duplicate full checkout in two workflows; harness checks live here, not in a
+second copy of `pre-commit.yml`.
 
 **Doc-gardening (Phase B):** `.github/workflows/doc-gardening.yml`, monthly cron,
-detection-only issue listing `active/*.md` older than 60 days with no linked open TODO
-(mirrors `upstream-pr-leak-check` philosophy).
+detection-only issue listing `active/*.md` whose git birth date (`git log --diff-filter=A
+--format=%ci`) is >60 days ago with no open-TODO backlink (mirrors
+`upstream-pr-leak-check.yml`).
 
 ### 9. Scripts (proposed)
 
 | Script | Contract |
 |--------|----------|
-| `scripts/check_todo.py` | Exit 1 on violation; `--strict-anchors` validates `#repo-process` etc. |
-| `scripts/check_plans.py` | Match `**Status:** active|completed`; exact required heading strings |
-| `scripts/archive_plan.py` | `--slug S --pr N [--kind user\|maintenance\|both]`: `git mv`, flip status, remove TODO line, insert log bullet(s); `--dry-run` prints diff |
-| `scripts/new_plan.py` | `--slug S`: scaffold from `docs/plans/PLANS.md` into `active/` |
+| `scripts/check_todo.py` | Multi-line bullet parsing; `--strict-anchors`; exempt grammar; `ERROR: …` format |
+| `scripts/check_plans.py` | Status in first 10 lines matches folder; pinned heading list; non-active Outcomes ≥100 chars; `superseded/` requires replacement link; `--allow-empty-archives` |
+| `scripts/archive_plan.py` | `--slug S --pr N --dest completed\|deferred\|superseded [--kind user\|maintenance\|both] [--dry-run] [--message]`: block-delete TODO, `git mv` to dest, link rewrite (§4 scope), log bullets with `(PR #N)`; idempotent |
+| `scripts/new_plan.py` | `--slug S`: scaffold from pinned `docs/plans/PLANS.md` into `active/` |
 
 Unit tests: `tests/unittest/test_check_todo.py`, `test_check_plans.py` with fixtures.
 
@@ -320,7 +380,7 @@ For delegated reviewer/implementer agents (Paseo, Cursor subagents):
 - [ ] Implement `scripts/check_todo.py`, `check_plans.py`, `new_plan.py`, `archive_plan.py`
 - [ ] Add CI workflow `repo-harness.yml`
 - [ ] Add pre-commit hooks for harness scripts (if fast enough)
-- [ ] Archive this plan to `completed/`, remove TODO item, log in `MAINTENANCE.md` on same PR
+- [ ] Archive via `archive_plan.py --dest completed --kind maintenance`; remove TODO item; log `MAINTENANCE.md`
 
 ### Phase B — Hardening (follow-up)
 
@@ -336,14 +396,15 @@ For delegated reviewer/implementer agents (Paseo, Cursor subagents):
 - [x] Draft ExecPlan (this document)
 - [x] Review by StepFun 3.7 Flash free (`kilo/stepfun/step-3.7-flash:free`)
 - [x] Review by Muse Spark 1.3 contributor (`opencode/opencode-go/muse-spark-1.3-contributor`)
-- [x] Incorporate reviewer feedback into this plan (2026-09-20)
+- [x] Incorporate v1 reviewer feedback (2026-09-20)
+- [x] Re-review by StepFun + Muse; incorporate re-review feedback (2026-09-20)
 - [ ] Owner review and Phase A PR
 
 ## Decision log
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-09-20 | Plans live under `docs/plans/{active,completed}/` | Matches harness-engineering layout; visible in docs site |
+| 2026-09-20 | Plans live under `docs/plans/{active,completed,deferred,superseded}/` | Matches harness layout; keep `active/` clean; deferred may resume, superseded must not |
 | 2026-09-20 | Dual logs: `CHANGELOG.md` (user-facing) + `MAINTENANCE.md` (under the hood) | Owner preference; semver tracks product, maintenance tracks harness |
 | 2026-09-20 | Close plan+TODO+log on same PR | Owner workflow; reduces orphan cleanup PRs |
 | 2026-09-20 | ExecPlan required for TODO items that say codify/audit/decide | Aligns tracker with durable artifacts |
@@ -354,12 +415,17 @@ For delegated reviewer/implementer agents (Paseo, Cursor subagents):
 | 2026-09-20 | `commit-msg` hook soft; CI hard gate | Stacked commits stay usable |
 | 2026-09-20 | Exclude `docs/plans/` from MkDocs nav by default | Agent docs, not user-facing site |
 | 2026-09-20 | Remove `## Done` from `TODO.md`; reject `- [x]` in linter | Owner: TODO is open backlog only |
+| 2026-09-20 | `repo-harness.yml` runs on all PRs (no paths filter) | Paths filter hollows out plan-link enforcement |
+| 2026-09-20 | Allow `## Scratch notes`; exempt grammar for owner-web-ui items | Matches real `TODO.md` shape |
+| 2026-09-20 | Harness scripts stdlib-only, `python3` in CI/pre-commit | `uv run` cold-start exceeds 2s hook budget |
+| 2026-09-20 | Add `deferred/` and `superseded/` archive folders | Owner: pause vs replace are distinct from ship; resume only from deferred |
 
 ## Surprises & discoveries
 
 - Both external reviewers endorsed same-PR close with CI hard gate + soft commit hint.
 - Muse flagged bootstrap paradox (checks must pass on the PR that creates them).
 - StepFun recommended `docs/plans/tech-debt-tracker.md` (OpenAI harness pattern).
+- Re-review consensus (~85% shippable): no structural rework; pin mechanical contracts.
 
 ## Outcomes & retrospective
 
@@ -377,16 +443,18 @@ uv run pre-commit run --files TODO.md docs/plans/ AGENTS.md CHANGELOG.md MAINTEN
 
 CI `repo-harness.yml` must pass on the implementing PR.
 
-## External review summary (2026-09-20)
+## External review summary
 
-| Reviewer | Verdict |
-|----------|---------|
-| Muse Spark 1.3 contributor | ~80% shippable; needs spec precision (headings, script contracts, semver ordering) |
-| StepFun 3.7 Flash free | Structurally sound; fix incomplete §2, define MAINTENANCE format, pin CI path |
+| Round | Reviewer | Verdict |
+|-------|----------|---------|
+| v1 | Muse Spark 1.3 contributor | ~80% shippable; spec precision needed |
+| v1 | StepFun 3.7 Flash free | Structurally sound; pin CI + MAINTENANCE format |
+| v2 | StepFun 3.7 Flash free | Dual-log + open-only TODO endorsed; pin skeleton + block-delete |
+| v2 | Muse Spark 1.3 contributor | ~85% shippable; 6 mechanical pins before Phase A |
 
-Consensus must-haves for Phase A: canonical `PLANS.md`, `check_*` scripts + tests,
-`repo-harness.yml`, `MAINTENANCE.md` bootstrap, open-only TODO (remove on ship),
-`commit-msg` soft hint, `archive_plan.py` that edits (not prints).
+Phase A blocking pins (from v2): `archive_plan.py` block-delete semantics, exempt
+grammar, unconditional `repo-harness.yml`, CHANGELOG header + fork tag policy,
+`## Scratch notes` + heading casing, ship `PLANS.md` + process docs + tests.
 
 ## References
 

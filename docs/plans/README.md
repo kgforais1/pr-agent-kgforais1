@@ -9,7 +9,9 @@ cleanup is promoted here.
 | Path | Purpose |
 |------|---------|
 | `docs/plans/active/` | In-flight ExecPlans linked from `TODO.md` |
-| `docs/plans/completed/` | Archived plans (moved here when work ships) |
+| `docs/plans/completed/` | Shipped work (archived on the implementing PR) |
+| `docs/plans/deferred/` | Paused — may resume later (blocked, owner hold, etc.) |
+| `docs/plans/superseded/` | Replaced by another plan — do not resurrect |
 | `docs/plans/PLANS.md` | ExecPlan template and authoring rules (added by implementation PR) |
 
 ## Lifecycle (target state)
@@ -22,5 +24,6 @@ full design. Summary:
 2. **Implement** — The implementing PR updates the plan (progress, decisions) and
    adds a `CHANGELOG.md` and/or `MAINTENANCE.md` entry on the **same PR** that ships
    the work (user-facing vs under-the-hood).
-3. **Close** — On merge: move plan to `completed/`, **remove** the TODO item (no Done
-   section), log in the appropriate file(s). Completed history is not kept in `TODO.md`.
+3. **Close** — On the same PR: move plan to `completed/`, `deferred/`, or
+   `superseded/` via `archive_plan.py --dest …`, **remove** the TODO item (no Done
+   section), log in the appropriate file(s). History is not kept in `TODO.md`.

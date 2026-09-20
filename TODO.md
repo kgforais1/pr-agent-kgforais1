@@ -4,7 +4,8 @@ Open work for `kgforais1/pr-agent-kgforais1` (standalone, detached from
 `The-PR-Agent/pr-agent` on 2026-09-19). **Open backlog only** — when an item ships,
 remove it here and log the outcome in `CHANGELOG.md` (user-facing) and/or
 `MAINTENANCE.md` (harness, refactors, process) — archive the ExecPlan under
-`docs/plans/completed/` if one exists). Do not add a Done section to this file.
+`docs/plans/completed/` (shipped), `deferred/` (paused), or `superseded/`
+(replaced) if one exists). Do not add a Done section to this file.
 
 ## Open
 
