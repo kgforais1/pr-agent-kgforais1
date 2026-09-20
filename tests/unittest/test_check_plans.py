@@ -123,3 +123,27 @@ def test_superseded_rejects_broken_docs_plans_link(
     )
     errors = mod.check_plans(allow_empty_archives=True)
     assert any("replacement" in e for e in errors)
+
+
+def test_superseded_rejects_image_posing_as_replacement(
+    tmp_path, monkeypatch, load_harness_script, patch_plans_module
+):
+    mod = load_harness_script("check_plans")
+    dirs = patch_plans_module(mod, monkeypatch, tmp_path)
+    (dirs["active"] / "successor.md").write_text(
+        MINIMAL.format(status="active", outcomes="x"),
+        encoding="utf-8",
+    )
+    outcomes = (
+        "Only an image points at the successor, which must not count as a link. "
+        "![successor](../active/successor.md) should fail the replacement check."
+    )
+    (dirs["superseded"] / "old.md").write_text(
+        MINIMAL.format(status="superseded", outcomes=outcomes),
+        encoding="utf-8",
+    )
+    import harness_lib as hl
+
+    monkeypatch.setattr(hl, "PLANS_ROOT", tmp_path)
+    errors = mod.check_plans(allow_empty_archives=True)
+    assert any("replacement" in e for e in errors)

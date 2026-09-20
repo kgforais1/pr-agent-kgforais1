@@ -23,7 +23,8 @@ EXEMPT_FILE = REPO_ROOT / "docs" / "process" / "todo-exempt.txt"
 ALLOWED_NO_PLAN_REASONS = frozenset({"owner-web-ui", "pending-execplan", "typo"})
 MIN_OUTCOMES_CHARS = 100
 ALLOWED_PLAN_FOLDERS = frozenset({"active", "completed", "deferred", "superseded"})
-MD_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+# Hyperlinks only — exclude Markdown images (`![alt](target)`).
+MD_LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)")
 PLAN_BASENAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*\.md$")
 
 STATUS_RE = re.compile(r"\*\*Status:\*\*\s*(active|completed|deferred|superseded)\b")
