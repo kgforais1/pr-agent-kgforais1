@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from harness_lib import ACTIVE_DIR, PLANS_ROOT, REPO_ROOT, SLUG_RE  # noqa: E402
+from harness_lib import ACTIVE_DIR, PLANS_ROOT, REPO_ROOT, validate_slug  # noqa: E402
 
 TEMPLATE = """# {title}
 
@@ -88,10 +88,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     slug = args.slug.strip()
-    if not SLUG_RE.fullmatch(slug):
-        raise SystemExit(
-            "slug must match ^[a-z0-9][a-z0-9-]*$ (kebab-case, lowercase)"
-        )
+    try:
+        slug = validate_slug(slug)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
     plans_md = PLANS_ROOT / "PLANS.md"
     if not plans_md.is_file():

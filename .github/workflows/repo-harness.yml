@@ -1,5 +1,8 @@
 # Runs repo harness checks on every pull request (no path filter).
 # Cheap stdlib scripts + unit tests for TODO/plan lifecycle invariants.
+# Intentionally avoids `uv sync`/`uv run` so Sonar GH-Actions rules
+# (S8541/S8544) do not flag setup-script / lockfile issues; harness
+# scripts are stdlib-only and tests only need a pinned pytest.
 name: repo-harness
 
 on:
@@ -16,10 +19,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4  # v10.1.0
-
-      - name: Install deps (incl. pytest)
-        run: uv sync --frozen
+      - name: Install pytest (pinned; harness scripts are stdlib-only)
+        run: python3 -m pip install --disable-pip-version-check "pytest==9.1.1"
 
       - name: Check TODO.md
         run: python3 scripts/check_todo.py --strict-anchors
@@ -28,4 +29,4 @@ jobs:
         run: python3 scripts/check_plans.py
 
       - name: Unit tests for harness scripts
-        run: PYTHONPATH=. uv run pytest -q tests/unittest/test_check_todo.py tests/unittest/test_check_plans.py
+        run: PYTHONPATH=. python3 -m pytest -q tests/unittest/test_check_todo.py tests/unittest/test_check_plans.py

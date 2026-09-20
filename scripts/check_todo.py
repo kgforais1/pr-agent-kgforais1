@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from harness_lib import (  # noqa: E402
     ACTIVE_DIR,
+    HEADING_RE,
     REPO_ROOT,
     TODO_PATH,
     error,
@@ -131,7 +132,7 @@ def check_todo(*, strict_anchors: bool) -> list[str]:
         heading_slugs = {
             github_slug(m.group(2)): (i + 1, m.group(0))
             for i, line in enumerate(lines)
-            if (m := re.match(r"^(#{2,3})\s+(.+?)\s*$", line))
+            if (m := HEADING_RE.match(line))
         }
         for anchor, expected_heading in ANCHOR_TARGETS.items():
             if anchor not in heading_slugs:

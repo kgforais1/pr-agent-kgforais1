@@ -25,6 +25,8 @@ from harness_lib import (  # noqa: E402
     TODO_PATH,
     is_checkbox_item,
     parse_todo_items,
+    plan_path,
+    validate_slug,
 )
 
 CHANGELOG_PATH = REPO_ROOT / "CHANGELOG.md"
@@ -248,10 +250,21 @@ def archive(
     dry_run: bool,
     require_todo: bool = True,
 ) -> int:
-    src = ACTIVE_DIR / f"{slug}.md"
+    try:
+        slug = validate_slug(slug)
+    except ValueError as exc:
+        raise SystemExit(f"ERROR: archive — {exc}") from exc
+
+    src = plan_path(ACTIVE_DIR, slug)
     dest_dir = ARCHIVE_DIRS[dest]
-    dest_path = dest_dir / f"{slug}.md"
+    dest_path = plan_path(dest_dir, slug)
     already = dest_path.is_file() and not src.is_file()
+
+    if src.is_file() and dest_path.is_file():
+        raise SystemExit(
+            f"ERROR: archive — both active and {dest}/ copies exist for {slug!r}; "
+            "resolve manually before re-running"
+        )
 
     if already:
         print(f"already archived: {dest_path.relative_to(REPO_ROOT)} — converging TODO/log")

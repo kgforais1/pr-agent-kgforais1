@@ -29,7 +29,7 @@ NO_PLAN_RE = re.compile(r"<!--\s*no-plan:\s*([a-z0-9-]+)\s*-->")
 CHECKED_RE = re.compile(r"^- \[[xX]\]")
 UNCHECKED_RE = re.compile(r"^- \[ \]")
 CHECKBOX_START_RE = re.compile(r"^- \[[ xX]\]")
-HEADING_RE = re.compile(r"^(#{2,3})\s+(.+?)\s*$")
+HEADING_RE = re.compile(r"^(#{2,3})\s+(\S.*)$")
 REQUIRED_PLAN_HEADINGS = (
     "## Purpose",
     "## Progress",
@@ -44,6 +44,25 @@ PLAN_TRIGGER_RE = re.compile(
     re.IGNORECASE,
 )
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def validate_slug(slug: str) -> str:
+    """Reject empty, traversal, or non-kebab slugs (Sonar S2083 / path safety)."""
+    if not SLUG_RE.fullmatch(slug):
+        raise ValueError(
+            f"invalid slug {slug!r}: must match ^[a-z0-9][a-z0-9-]*$"
+        )
+    return slug
+
+
+def plan_path(directory: Path, slug: str) -> Path:
+    """Return directory/slug.md resolved and guaranteed under directory."""
+    validate_slug(slug)
+    base = directory.resolve()
+    path = (base / f"{slug}.md").resolve()
+    if path != base / path.name or path.parent != base:
+        raise ValueError(f"plan path escapes directory: {path}")
+    return path
 
 
 def is_checked_item(line: str) -> bool:
