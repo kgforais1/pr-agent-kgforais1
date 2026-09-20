@@ -8,7 +8,7 @@ This tree is [`kgforais1/pr-agent-kgforais1`](https://github.com/kgforais1/pr-ag
 
 ## Lineage & upstream
 
-This repository is a **detached fork** of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) (detached 2026-09-19). Pull requests are **not** opened upstream from this repo. A scheduled `upstream-sync` workflow tracks upstream changes; see repository issues and [AGENTS.md](./AGENTS.md) for fork safety rules.
+This repository is a **detached fork** of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) (detached 2026-09-19). Pull requests are **not** opened upstream from this repo. A scheduled `upstream-sync-check` workflow tracks upstream changes; see repository issues and [AGENTS.md](./AGENTS.md) for fork safety rules.
 
 ## Table of Contents
 

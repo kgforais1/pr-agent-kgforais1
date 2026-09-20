@@ -4,7 +4,7 @@
 
 ## Lineage & upstream
 
-This tree is a **detached fork** of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) (detached 2026-09-19). Pull requests are not opened upstream from this repo; scheduled `upstream-sync` tracks upstream changes.
+This tree is a **detached fork** of [The-PR-Agent/pr-agent](https://github.com/The-PR-Agent/pr-agent) (detached 2026-09-19). Pull requests are not opened upstream from this repo; scheduled `upstream-sync-check` tracks upstream changes.
 
 - See the [Installation Guide](./installation/index.md) for instructions on installing and running the tool on different git platforms.
 

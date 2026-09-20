@@ -22,7 +22,7 @@ namespace decisions (that is the separate packaging audit).
 
 - [x] Draft context and plan of work
 - [x] Implement
-- [ ] Validate
+- [x] Validate
 - [ ] Archive on same PR (`scripts/archive_plan.py`)
 
 Research: `tmp/docs-readme-audit-research.md` (gitignored). Strategy: Option 2
@@ -39,6 +39,7 @@ implements on `docs/readme-audit`.
   `docs.pr-agent.ai`. CNAME deleted in this rewrite so a fork Pages deploy would not mis-claim upstream's domain.
 - Implementation used a Python bulk script for blob/tree/clone URL rewrites under `docs/docs/`; demo PR and upstream issue links were left in place and labeled where visible.
 - Parent review (2026-09-20): Composer omitted `.github/ISSUE_TEMPLATE/config.yml` (upstream Discussions). Also tightened “our” Docker/Action wording, CLI/`pip` upstream-PyPI caveats, `/help_docs` issue label, MOSAICO “ships in every release” claim, and the MkDocs tagging-bot link (relative `../../README.md` is outside `docs_dir`).
+- Muse Spark 1.3 Contributor review (2026-09-20): relative `../../../pr_agent/` / `../../../docker/` links escape MkDocs `docs_dir` and 404 on the built site; lineage copy named a non-existent `upstream-sync` workflow. Fixed to fork blob/tree URLs and `upstream-sync-check`.
 
 ## Decision log
 
@@ -56,7 +57,11 @@ implements on `docs/readme-audit`.
 
 ## Outcomes & retrospective
 
-_(fill when archived)_
+Fork-first README, MkDocs, and policy files now describe `kgforais1/pr-agent-kgforais1`.
+Qodo promo, GTM, and `docs.pr-agent.ai` CNAME are gone. Docker/Action/PyPI examples
+stay as labeled upstream artifacts. Muse review caught MkDocs `docs_dir` escapes;
+those source links now use fork blob/tree URLs. Packaging namespace remains a
+separate TODO.
 
 ## Context and Orientation
 

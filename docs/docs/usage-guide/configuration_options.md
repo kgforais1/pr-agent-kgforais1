@@ -8,8 +8,8 @@ There are three main ways to set persistent configurations:
 In terms of precedence, local configurations will override global configurations, and global configurations will override an external configuration URL.
 
 
-For a list of all possible configurations, see the [configuration options](../../../pr_agent/settings/configuration.toml) page, or the rendered [Configuration Reference](./configuration_reference.md) which lists every option grouped by section.
-In addition to general configuration options, each tool has its own configurations. For example, the `review` tool will use parameters from the [pr_reviewer](../../../pr_agent/settings/configuration.toml) section in the configuration file.
+For a list of all possible configurations, see the [configuration options](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) page, or the rendered [Configuration Reference](./configuration_reference.md) which lists every option grouped by section.
+In addition to general configuration options, each tool has its own configurations. For example, the `review` tool will use parameters from the [pr_reviewer](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) section in the configuration file.
 
 !!! tip "Tip1: Edit only what you need"
     Your configuration file should be minimal, and edit only the relevant values. Don't copy the entire configuration options, since it can lead to legacy problems when something changes.

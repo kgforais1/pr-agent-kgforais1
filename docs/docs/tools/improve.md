@@ -324,7 +324,7 @@ Note: Chunking is primarily relevant for large PRs. For most PRs (up to 600 line
 ## Configuration options
 
 The descriptions below explain each option's behavior. See the relevant sections in
-[`configuration.toml`](../../../pr_agent/settings/configuration.toml)
+[`configuration.toml`](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml)
 for the authoritative default values.
 
 ???+ example "General options"

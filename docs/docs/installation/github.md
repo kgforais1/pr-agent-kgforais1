@@ -45,7 +45,7 @@ The GITHUB_TOKEN secret is automatically created by GitHub.
 3) Merge this change to your main branch.
 When you open your next PR, you should see a comment from `github-actions` bot with a review of your PR, and instructions on how to use the rest of the tools.
 
-4) You may configure PR-Agent by adding environment variables under the env section corresponding to any configurable property in the [configuration](../../../pr_agent/settings/configuration.toml) file. Some examples:
+4) You may configure PR-Agent by adding environment variables under the env section corresponding to any configurable property in the [configuration](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) file. Some examples:
 
 ```yaml
       env:
@@ -709,7 +709,7 @@ cp pr_agent/settings/.secrets_template.toml pr_agent/settings/.secrets.toml
 - Copy your app's private key to the private_key field.
 - Copy your app's ID to the app_id field.
 - Copy your app's webhook secret to the webhook_secret field (required).
-- Set deployment_type to 'app' in [configuration.toml](../../../pr_agent/settings/configuration.toml)
+- Set deployment_type to 'app' in [configuration.toml](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml)
 
     > The local `.secrets.toml` file is excluded from the Docker build context. Never bake secrets into a container image.
     > For container deployments, provide secrets at runtime through environment variables or a mounted secret volume.

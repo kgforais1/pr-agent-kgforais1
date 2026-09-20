@@ -31,7 +31,7 @@ verbosity_level=2
 
 This is useful for debugging or experimenting with different tools.
 
-3. **git provider**: The [git_provider](../../../pr_agent/settings/configuration.toml) field in a configuration file determines the GIT provider that will be used by PR-Agent. Currently, the following providers are supported:
+3. **git provider**: The [git_provider](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) field in a configuration file determines the GIT provider that will be used by PR-Agent. Currently, the following providers are supported:
 `github` **(default)**, `gitlab`, `bitbucket`, `azure`, `codecommit`, `local`, and `gitea`.
 
 4. For scripts that need a failed request to return a non-zero process status, enable tool error propagation:
@@ -83,7 +83,7 @@ For example, if you want to edit the `review` tool configurations, you can run:
 /review --pr_reviewer.extra_instructions="..." --pr_reviewer.require_score_review=false
 ```
 
-Any configuration value in [configuration file](../../../pr_agent/settings/configuration.toml) file can be similarly edited. Comment `/config` to see the list of available configurations.
+Any configuration value in [configuration file](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) file can be similarly edited. Comment `/config` to see the list of available configurations.
 
 ## PR-Agent Automatic Feedback
 
@@ -105,7 +105,7 @@ When this parameter is set to `true`, PR-Agent will not run any automatic tools 
 
 #### GitHub app automatic tools when a new PR is opened
 
-The [github_app](../../../pr_agent/settings/configuration.toml) section defines GitHub app specific configurations.
+The [github_app](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) section defines GitHub app specific configurations.
 
 The configuration parameter `pr_commands` defines the list of tools that will be **run automatically** when a new PR is opened:
 
@@ -242,7 +242,7 @@ env:
 
 `github_action_config.enable_output` are used to enable/disable github actions [output parameter](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions) (default is `true`).
 Review result is output as JSON to `steps.{step-id}.outputs.review` property.
-The JSON structure is equivalent to the yaml data structure defined in [pr_reviewer_prompts.toml](../../../pr_agent/settings/pr_reviewer_prompts.toml).
+The JSON structure is equivalent to the yaml data structure defined in [pr_reviewer_prompts.toml](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/pr_reviewer_prompts.toml).
 
 `github.publish_as_check_run` controls whether tool output (review, describe, improve) is published as a GitHub Check Run instead of a PR comment (default is `false`). When enabled, results appear in the "Checks" tab of the PR. Requires `checks: write` permission in the workflow YAML.
 
@@ -341,7 +341,7 @@ Draft MRs and MRs matching the [ignore settings](additional_configurations.md#ig
 
 ### BitBucket App
 
-Similar to GitHub app, when running PR-Agent from BitBucket App, the default [configuration file](../../../pr_agent/settings/configuration.toml) will be initially loaded.
+Similar to GitHub app, when running PR-Agent from BitBucket App, the default [configuration file](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) will be initially loaded.
 
 By uploading a local `.pr_agent.toml` file to the root of the repo's default branch, you can edit and customize any configuration parameter. Note that you need to upload `.pr_agent.toml` prior to creating a PR, in order for the configuration to take effect.
 
