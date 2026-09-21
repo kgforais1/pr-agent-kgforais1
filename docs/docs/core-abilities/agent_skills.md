@@ -4,7 +4,7 @@
 
 ## Overview
 
-Agent Skills let you distribute curated, reusable review guidance to PR-Agent using the [agent-skills (`SKILL.md`) format](https://github.com/The-PR-Agent/pr-agent/issues/2384). A skill is a directory containing a `SKILL.md` file with YAML frontmatter (`name` + `description`) followed by a markdown body:
+Agent Skills let you distribute curated, reusable review guidance to PR-Agent using the [agent-skills (`SKILL.md`) format](https://github.com/The-PR-Agent/pr-agent/issues/2384) (upstream issue). A skill is a directory containing a `SKILL.md` file with YAML frontmatter (`name` + `description`) followed by a markdown body:
 
 ```markdown
 ---

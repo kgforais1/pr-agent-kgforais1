@@ -34,7 +34,7 @@ A record is a JSON object:
 ## Configuration
 
 The defaults are defined at the end of the
-[configuration file](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml):
+[configuration file](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml):
 
 ```toml
 [push_outputs]

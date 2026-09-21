@@ -13,7 +13,7 @@
 4. Clone this repository:
 
     ```bash
-    git clone https://github.com/the-pr-agent/pr-agent.git
+    git clone https://github.com/kgforais1/pr-agent-kgforais1.git
     ```
 
 5. Prepare variables and secrets. Skip this step if you plan on setting these as environment variables when running the agent:

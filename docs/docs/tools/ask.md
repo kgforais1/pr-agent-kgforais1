@@ -58,9 +58,6 @@ To get a direct link to an image, we recommend using the following scheme:
 4\. Post the comment, and receive the answer:
 
 ![Ask image5](../assets/ask_images5.png){width=512}
-
-See a full video tutorial [here](https://codium.ai/images/pr_agent/ask_image_video.mov)
-
 ## Configuration options
 
 ???+ example "General options"

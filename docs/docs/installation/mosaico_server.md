@@ -3,7 +3,7 @@
 PR-Agent can run as an [A2A](https://a2a-protocol.org/) 1.0 *solution agent* for the
 [MOSAICO](https://mosaico-project.eu/) ecosystem: a small Starlette server that exposes the
 standard A2A surface (agent card + JSON-RPC) plus a health probe. It is **not** a fork or a
-separate project — the server is PR-Agent code under [`pr_agent/mosaico/`](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/mosaico/server.py),
+separate project — the server is PR-Agent code under [`pr_agent/mosaico/`](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/mosaico/server.py),
 ships in every release wheel, and ships as its own Docker image (`<version>-mosaico_agent`)
 starting at `v0.36.0`. The server is unbiased about the git provider: every request carries
 either a PR URL or a raw diff, and the agent answers from that input alone.
@@ -36,6 +36,9 @@ advertised as disabled, which is load-bearing: the reference agent selects
 `message/send` vs `message/stream` from that capability.
 
 ### Run the standalone container
+
+!!! note "Upstream-published artifacts"
+    The `pragent/pr-agent:…-mosaico_agent` images below are published by **upstream**. This fork has not decided to publish its own Docker images. Build from this repository or pin upstream artifacts deliberately.
 
 The server boots from a bare `docker pull` in a couple of seconds — no repo clone, no build:
 
@@ -85,7 +88,7 @@ rolling tag moves to the newest build on every release.
 
 ### Deploy into the mosaico-demonstrator
 
-The [`docker/mosaico/`](https://github.com/the-pr-agent/pr-agent/tree/main/docker/mosaico)
+The [`docker/mosaico/`](https://github.com/kgforais1/pr-agent-kgforais1/tree/main/docker/mosaico)
 directory is a full deployment bundle (compose overlay, registration template, env template,
 smoke test, LICENSE, and the canonical README). To run the agent as a task agent in the
 [mosaico-demonstrator](https://gitlab.eclipse.org/eclipse-research-labs/mosaico-project/mosaico-demonstrator):
@@ -137,6 +140,6 @@ in the bundle directory gives one of two outcomes:
 
 ### Keep reading
 
-The [bundle README](https://github.com/the-pr-agent/pr-agent/blob/main/docker/mosaico/README.md)
+The [bundle README](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/docker/mosaico/README.md)
 is the canonical deep dive for this surface and the source of the summary above; it covers the
 upgrade procedure, the registration flow, and the full env-var contract in one place.

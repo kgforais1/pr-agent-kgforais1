@@ -86,10 +86,10 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/the-pr-agent/pr-agent"
-"Documentation" = "https://docs.pr-agent.ai/"
-"Repository" = "https://github.com/the-pr-agent/pr-agent"
-"Issues" = "https://github.com/the-pr-agent/pr-agent/issues"
+"Homepage" = "https://github.com/kgforais1/pr-agent-kgforais1"
+"Documentation" = "https://github.com/kgforais1/pr-agent-kgforais1/tree/main/docs"
+"Repository" = "https://github.com/kgforais1/pr-agent-kgforais1"
+"Issues" = "https://github.com/kgforais1/pr-agent-kgforais1/issues"
 
 [tool.setuptools]
 include-package-data = true

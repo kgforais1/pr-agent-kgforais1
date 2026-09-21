@@ -7,6 +7,9 @@ Local execution has two distinct cases: use the hosted-provider examples below f
 
 ## Using Docker image
 
+!!! note "Upstream-published artifacts"
+    The `pragent/pr-agent` images below are published by **upstream**. This fork has not decided to publish its own Docker images. Build from this repository or pin upstream artifacts deliberately.
+
 A list of the relevant tools can be found in the [tools guide](../tools/).
 
 To invoke a tool (for example `review`), you can run PR-Agent directly from the Docker image. Here's how:
@@ -55,7 +58,7 @@ To invoke a tool (for example `review`), you can run PR-Agent directly from the 
     ```
 
 
-For other git providers, update `CONFIG__GIT_PROVIDER` accordingly and check the [`pr_agent/settings/.secrets_template.toml`](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/.secrets_template.toml) file for environment variables expected names and values.
+For other git providers, update `CONFIG__GIT_PROVIDER` accordingly and check the [`pr_agent/settings/.secrets_template.toml`](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/.secrets_template.toml) file for environment variables expected names and values.
 
 ### Utilizing environment variables
 
@@ -93,6 +96,8 @@ For example, for Azure OpenAI, additional keys are [needed](../usage-guide/chang
 Same goes for other providers, make sure to check the [documentation](../usage-guide/changing_a_model.md#changing-a-model)
 
 ## Using pip package
+
+`pip install pr-agent` installs the **upstream** PyPI package. This fork has not published its own distribution; prefer [Run from source](#run-from-source) with `uv sync` for this repository.
 
 Install the package:
 
@@ -136,12 +141,13 @@ With `config.propagate_tool_errors` enabled, forwarding the return value through
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/the-pr-agent/pr-agent.git
+git clone https://github.com/kgforais1/pr-agent-kgforais1.git
 ```
 
-2. Navigate to the `/pr-agent` folder and install dependencies with [uv](https://docs.astral.sh/uv/) (creates a `.venv` from `uv.lock`):
+2. Change into the cloned `pr-agent-kgforais1` directory and install dependencies with [uv](https://docs.astral.sh/uv/) (creates a `.venv` from `uv.lock`):
 
 ```bash
+cd pr-agent-kgforais1
 uv sync
 ```
 

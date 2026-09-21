@@ -3,8 +3,11 @@
 Deployment assets for running **PR-Agent** as a [MOSAICO](https://mosaico-project.eu/) A2A
 *solution agent*. This directory contains no Python and no pr-agent source — it consumes
 PR-Agent as a published, version-pinned Docker image. The agent's source lives in
-[`The-PR-Agent/pr-agent`](https://github.com/The-PR-Agent/pr-agent), under `pr_agent/mosaico/`;
-it is merged into `main` and ships in every release wheel and image starting at `v0.36.0`.
+[`kgforais1/pr-agent-kgforais1`](https://github.com/kgforais1/pr-agent-kgforais1), under `pr_agent/mosaico/`;
+it is merged into `main` and ships in **upstream** release wheels and images starting at `v0.36.0`.
+
+> [!NOTE]
+> **Upstream-published Docker images.** Examples below use `pragent/pr-agent:…-mosaico_agent` tags published by **upstream**. This fork has not decided to publish its own images. Build from this repository or pin upstream artifacts deliberately.
 
 ## Relationship to the PR-Agent repository
 
@@ -20,11 +23,11 @@ This is not a fork and it never becomes one:
   -    image: pragent/pr-agent:0.41.0-mosaico_agent
   +    image: pragent/pr-agent:0.42.0-mosaico_agent
   ```
-- The release workflow publishes `pragent/pr-agent:<version>-mosaico_agent` for every release,
+- Upstream's release workflow publishes `pragent/pr-agent:<version>-mosaico_agent` for every release,
   from the same CI matrix that builds its other images — the MOSAICO target cannot silently
   stop being built without the whole release failing.
 - Canonical source of every file in this bundle is `docker/mosaico/` in
-  `github.com/The-PR-Agent/pr-agent` — this directory. The GitLab deployment mirror holds
+  [`kgforais1/pr-agent-kgforais1`](https://github.com/kgforais1/pr-agent-kgforais1) — this directory. The GitLab deployment mirror holds
   verbatim copies; edit here, and re-copy there. Never edit the mirror directly.
 
 ## Quick start (standalone, no demonstrator)
@@ -158,4 +161,4 @@ Two outcomes:
 
 ## License
 
-MIT — see the bundled [`LICENSE`](./LICENSE). `The-PR-Agent/pr-agent` is MIT-licensed too.
+MIT — see the bundled [`LICENSE`](./LICENSE). PR-Agent is MIT-licensed too.

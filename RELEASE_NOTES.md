@@ -1,5 +1,7 @@
 # Release notes
 
+> **Archival upstream history only.** The body below records release notes from when the project lived at Codium-ai/pr-agent and The-PR-Agent/pr-agent. It is not updated for this fork (`kgforais1/pr-agent-kgforais1`) and is not primary onboarding material.
+
 **Release notes now live on GitHub.** Notes for every release from `v0.12` onwards are published on
 the [Releases page](https://github.com/The-PR-Agent/pr-agent/releases), generated from the merged
 pull requests of each release. This file is no longer updated per release.

@@ -1,8 +1,11 @@
 In this page we will cover how to install and run PR-Agent as a GitHub Action or GitHub App, and how to configure it for your needs.
 
+!!! note "Upstream-published artifacts"
+    Workflow examples on this page use `uses: the-pr-agent/pr-agent@main` and `docker://pragent/pr-agent:…` images published by **upstream**. This fork (`kgforais1/pr-agent-kgforais1`) has not decided to publish its own GitHub Action or Docker images. Build from this repository or pin upstream artifacts deliberately.
+
 ## Run as a GitHub Action
 
-You can use our pre-built GitHub Action Docker image to run PR-Agent as a GitHub Action.
+You can use the **upstream** pre-built GitHub Action Docker image to run PR-Agent as a GitHub Action.
 
 1) Add the following file to your repository under `.github/workflows/pr_agent.yml`:
 
@@ -42,7 +45,7 @@ The GITHUB_TOKEN secret is automatically created by GitHub.
 3) Merge this change to your main branch.
 When you open your next PR, you should see a comment from `github-actions` bot with a review of your PR, and instructions on how to use the rest of the tools.
 
-4) You may configure PR-Agent by adding environment variables under the env section corresponding to any configurable property in the [configuration](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml) file. Some examples:
+4) You may configure PR-Agent by adding environment variables under the env section corresponding to any configurable property in the [configuration](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml) file. Some examples:
 
 ```yaml
       env:
@@ -692,7 +695,7 @@ WEBHOOK_SECRET=$(python -c "import secrets; print(secrets.token_hex(10))")
 4) Clone this repository:
 
 ```bash
-git clone https://github.com/the-pr-agent/pr-agent.git
+git clone https://github.com/kgforais1/pr-agent-kgforais1.git
 ```
 
 5) Copy the secrets template file and fill in the following:
@@ -706,7 +709,7 @@ cp pr_agent/settings/.secrets_template.toml pr_agent/settings/.secrets.toml
 - Copy your app's private key to the private_key field.
 - Copy your app's ID to the app_id field.
 - Copy your app's webhook secret to the webhook_secret field (required).
-- Set deployment_type to 'app' in [configuration.toml](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/settings/configuration.toml)
+- Set deployment_type to 'app' in [configuration.toml](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml)
 
     > The local `.secrets.toml` file is excluded from the Docker build context. Never bake secrets into a container image.
     > For container deployments, provide secrets at runtime through environment variables or a mounted secret volume.
