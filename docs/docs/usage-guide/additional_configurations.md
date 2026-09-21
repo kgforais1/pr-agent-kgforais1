@@ -1,6 +1,6 @@
 ## Show possible configurations
 
-The possible configurations of PR-Agent are stored in [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml){:target="_blank"}.
+The possible configurations of PR-Agent are stored in [configuration.toml](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml){:target="_blank"}.
 In the [tools](../tools/index.md) page you can find explanations on how to use these configurations for each tool.
 
 To print all the available configurations as a comment on your PR, you can use the following command:

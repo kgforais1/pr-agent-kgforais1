@@ -18,3 +18,6 @@ User-facing history: [CHANGELOG.md](CHANGELOG.md).
   `../../../TODO.md` plan links, and `repo-harness` CI via
   `uv sync --locked --only-dev --no-build` (pytest from the lockfile without
   sdist setup scripts), and `permissions: contents: read` on `repo-harness.yml`.
+- `publish.yml` jobs are allowlisted to `The-PR-Agent/pr-agent` so this fork
+  cannot publish PyPI `pr-agent` or Docker Hub `pragent/pr-agent` (PR #10,
+  2026-09-20). Packaging audit still decides whether to publish under new names.

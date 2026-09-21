@@ -1,6 +1,6 @@
 ## Changing a model in PR-Agent
 
-See [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py) for a list of supported models in PR-Agent.
+See [the supported-model list](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py) for a list of supported models in PR-Agent.
 The current default model and fallback tier are defined in the [configuration file](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/settings/configuration.toml).
 To use different models, edit these fields in that file:
 
@@ -676,7 +676,7 @@ OPENAI__KEY=...
 
 (you can obtain an OrcaRouter API key from [here](https://www.orcarouter.ai/register))
 
-Keep the `openai/` prefix on the model name, whatever OrcaRouter model ID you use (`openai/anthropic/claude-fable-5`, `openai/auto`, ...): the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the `MAX_TOKENS` table [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. OrcaRouter governs routing and guardrails itself, but `config.reasoning_effort` still reaches it: PR-Agent matches the last segment of the model ID against `SUPPORT_REASONING_EFFORT_MODELS`, so an ID such as `openai/google/gemini-2.5-pro` or `openai/o3` sends the configured effort (default `"medium"`) even with nothing set. The example IDs above are not in that list and are unaffected.
+Keep the `openai/` prefix on the model name, whatever OrcaRouter model ID you use (`openai/anthropic/claude-fable-5`, `openai/auto`, ...): the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the [MAX_TOKENS table](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. OrcaRouter governs routing and guardrails itself, but `config.reasoning_effort` still reaches it: PR-Agent matches the last segment of the model ID against `SUPPORT_REASONING_EFFORT_MODELS`, so an ID such as `openai/google/gemini-2.5-pro` or `openai/o3` sends the configured effort (default `"medium"`) even with nothing set. The example IDs above are not in that list and are unaffected.
 
 ### Neon AI Gateway
 
@@ -702,7 +702,7 @@ OPENAI__API_BASE=https://<your-neon-branch-host>/v1
 OPENAI__KEY=...
 ```
 
-Keep the `openai/` prefix on the model name, whichever Neon model ID you use: the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the `MAX_TOKENS` table [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. Take the value from Neon's [model catalog](https://neon.com/docs/ai-gateway/models).
+Keep the `openai/` prefix on the model name, whichever Neon model ID you use: the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the [MAX_TOKENS table](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. Take the value from Neon's [model catalog](https://neon.com/docs/ai-gateway/models).
 
 Create the credential per branch in the [Neon Console](https://console.neon.tech/) with the `ai_gateway:invoke` scope. The credential also works on branches descended from the one it was created on. The gateway is in beta and requires a paid Neon plan. It runs only in AWS US East (Ohio), `aws-us-east-2`.
 
@@ -755,14 +755,14 @@ OPENAI__KEY=...
 
 (you can obtain an Atlas Cloud API key from the [console](https://www.atlascloud.ai/console))
 
-Keep the `openai/` prefix on the model name, whichever Atlas model ID you use (`openai/deepseek-ai/deepseek-v4-pro`, `openai/zai-org/glm-5`, `openai/moonshotai/kimi-k2.6`, ...): the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the `MAX_TOKENS` table [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. Take the value from Atlas's [model catalog](https://www.atlascloud.ai/models).
+Keep the `openai/` prefix on the model name, whichever Atlas model ID you use (`openai/deepseek-ai/deepseek-v4-pro`, `openai/zai-org/glm-5`, `openai/moonshotai/kimi-k2.6`, ...): the prefix routes the request through litellm's OpenAI-compatible path. A prefixed name is not in the [MAX_TOKENS table](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), so you also have to set `custom_model_max_tokens`. Take the value from Atlas's [model catalog](https://www.atlascloud.ai/models).
 
 !!! note "Reasoning models need output headroom"
     Several Atlas models are reasoning models that spend completion tokens on a hidden chain of thought before writing the answer. `deepseek-ai/deepseek-v4-pro` with `max_tokens = 16` returns `finish_reason = "length"` and an **empty** `message.content` — all 16 completion tokens were reasoning tokens. If a tool comes back blank, raise the output budget rather than assuming the request failed. Non-reasoning IDs such as `deepseek-ai/DeepSeek-V3.1` are unaffected.
 
 ### Custom models
 
-If the relevant model doesn't appear [here](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), you can still use it as a custom model:
+If the relevant model doesn't appear in [the supported-model list](https://github.com/kgforais1/pr-agent-kgforais1/blob/main/pr_agent/algo/__init__.py), you can still use it as a custom model:
 
 1. Set the model name in the configuration file:
 

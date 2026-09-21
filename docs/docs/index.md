@@ -59,21 +59,21 @@ PR-Agent offers comprehensive pull request functionalities integrated with vario
 
 <hr>
 
-#### [/describe](https://github.com/the-pr-agent/pr-agent/pull/530) (upstream example)
+### [/describe](https://github.com/the-pr-agent/pr-agent/pull/530) (upstream example)
 
 <figure markdown="1">
 ![/describe](assets/describe_new_short_main.webp){width=512}
 </figure>
 <hr>
 
-#### [/review](https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099151) (upstream example)
+### [/review](https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099151) (upstream example)
 
 <figure markdown="1">
 ![/review](assets/review_new_short_main.png){width=512}
 </figure>
 <hr>
 
-#### [/improve](https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099159) (upstream example)
+### [/improve](https://github.com/the-pr-agent/pr-agent/pull/732#issuecomment-1975099159) (upstream example)
 
 <figure markdown="1">
 ![/improve](assets/improve_new_short_main.webp){width=512}

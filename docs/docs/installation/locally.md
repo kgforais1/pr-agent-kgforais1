@@ -144,9 +144,10 @@ With `config.propagate_tool_errors` enabled, forwarding the return value through
 git clone https://github.com/kgforais1/pr-agent-kgforais1.git
 ```
 
-2. Navigate to the `/pr-agent` folder and install dependencies with [uv](https://docs.astral.sh/uv/) (creates a `.venv` from `uv.lock`):
+2. Change into the cloned `pr-agent-kgforais1` directory and install dependencies with [uv](https://docs.astral.sh/uv/) (creates a `.venv` from `uv.lock`):
 
 ```bash
+cd pr-agent-kgforais1
 uv sync
 ```
 

@@ -1,5 +1,10 @@
 name: Publish
 
+# This detached fork must not publish PyPI `pr-agent` or Docker Hub `pragent/pr-agent`
+# (upstream namespaces). Every job is allowlisted to The-PR-Agent/pr-agent so a
+# release or workflow_dispatch here cannot push those artifacts. The packaging
+# audit will decide whether this fork publishes under new names.
+
 on:
   release:
     types:
@@ -22,6 +27,7 @@ concurrency:
 
 jobs:
   prepare:
+    if: github.repository == 'The-PR-Agent/pr-agent'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.resolve.outputs.version }}
@@ -79,6 +85,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   publish-pypi:
+    if: github.repository == 'The-PR-Agent/pr-agent'
     needs: prepare
     runs-on: ubuntu-latest
     environment: release
@@ -108,6 +115,7 @@ jobs:
           skip-existing: true
 
   publish-docker:
+    if: github.repository == 'The-PR-Agent/pr-agent'
     needs: prepare
     runs-on: ubuntu-latest
     environment: release
@@ -231,7 +239,8 @@ jobs:
     # this repo's state, not the index. Coupling them meant one PyPI failure
     # left main on the old version with all images already published (v0.40.0).
     if: >-
-      always()
+      github.repository == 'The-PR-Agent/pr-agent'
+      && always()
       && needs.prepare.result == 'success'
       && needs.publish-docker.result == 'success'
     runs-on: ubuntu-latest

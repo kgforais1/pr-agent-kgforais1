@@ -37,6 +37,9 @@ advertised as disabled, which is load-bearing: the reference agent selects
 
 ### Run the standalone container
 
+!!! note "Upstream-published artifacts"
+    The `pragent/pr-agent:…-mosaico_agent` images below are published by **upstream**. This fork has not decided to publish its own Docker images. Build from this repository or pin upstream artifacts deliberately.
+
 The server boots from a bare `docker pull` in a couple of seconds — no repo clone, no build:
 
 ```bash
